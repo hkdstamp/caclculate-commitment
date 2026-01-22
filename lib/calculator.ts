@@ -63,8 +63,10 @@ export function calculateCommitmentCost(
       : 0;
 
   // SP計算
+  // SPの場合、unit_priceは割引率（支払い率）を表す
+  // 例: unit_price = 0.6 → オンデマンドの60%を支払う（40%割引）
   const spCommitmentCost = spDiscount
-    ? usageAmount * spDiscount.unit_price
+    ? ondemandCost * spDiscount.unit_price
     : ondemandCost;
 
   const spAppliedOndemand = ondemandCost * params.sp_applied_rate;
