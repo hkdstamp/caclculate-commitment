@@ -446,10 +446,30 @@ export const reservationCatalog: ReservationDiscount[] = [
   {
     service: 'Amazon Elastic Compute Cloud',
     contract_years: 1,
+    payment_method: 'NoUpfront',
+    region: 'ap-northeast-3',
+    instance_type: '',
+    unit_price: 0.68, // 32%割引
+    unit_price_unit: 'discount rate',
+    reservation_type: 'SP',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 1,
     payment_method: 'AllUpfront',
     region: 'ap-northeast-3',
     instance_type: '',
     unit_price: 0.60, // 40%割引
+    unit_price_unit: 'discount rate',
+    reservation_type: 'SP',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 3,
+    payment_method: 'NoUpfront',
+    region: 'ap-northeast-3',
+    instance_type: '',
+    unit_price: 0.56, // 44%割引
     unit_price_unit: 'discount rate',
     reservation_type: 'SP',
   },
@@ -649,14 +669,22 @@ export function findReservationDiscounts(
 
 /**
  * 最も安い予約割引を取得する（3年優先、同じ契約年数なら最安単価）
+ * SPの場合はNoUpfrontを優先
  */
 export function getBestReservationDiscount(
   discounts: ReservationDiscount[]
 ): ReservationDiscount | undefined {
   if (discounts.length === 0) return undefined;
 
+  // SPの場合はNoUpfrontのみをフィルタ
+  const filteredDiscounts = discounts[0]?.reservation_type === 'SP'
+    ? discounts.filter(d => d.payment_method === 'NoUpfront')
+    : discounts;
+
+  if (filteredDiscounts.length === 0) return undefined;
+
   // 3年契約を優先、同じ契約年数なら最安単価
-  return discounts.sort((a, b) => {
+  return filteredDiscounts.sort((a, b) => {
     // 契約年数が異なる場合は3年を優先
     if (a.contract_years !== b.contract_years) {
       return b.contract_years - a.contract_years;
