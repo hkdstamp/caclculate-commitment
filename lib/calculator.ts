@@ -11,17 +11,17 @@ import {
 } from './reservation-catalog';
 
 /**
- * 単一のコストデータに対してコミットメントコストを計算
+ * 単一のコストデータに対してコミットメントコストを計算（非同期版）
  */
-export function calculateCommitmentCost(
+export async function calculateCommitmentCost(
   costData: AWSCostData,
   params: CalculationParams
-): CommitmentCostResult {
+): Promise<CommitmentCostResult> {
   const ondemandCost = costData.ondemand_risk_cost;
   const usageAmount = costData.usage_amount;
 
   // RI割引の検索
-  const riDiscounts = findReservationDiscounts(
+  const riDiscounts = await findReservationDiscounts(
     costData.service,
     costData.product_region,
     costData.product_instancetype,
@@ -30,7 +30,7 @@ export function calculateCommitmentCost(
   const riDiscount = getBestReservationDiscount(riDiscounts);
 
   // SP割引の検索
-  const spDiscounts = findReservationDiscounts(
+  const spDiscounts = await findReservationDiscounts(
     costData.service,
     costData.product_region,
     undefined, // SPはインスタンスタイプ不問
@@ -118,14 +118,14 @@ export function calculateCommitmentCost(
 }
 
 /**
- * 複数のコストデータを集計して結果を返す
+ * 複数のコストデータを集計して結果を返す（非同期版）
  */
-export function aggregateResults(
+export async function aggregateResults(
   costDataList: AWSCostData[],
   params: CalculationParams
-): AggregatedResult {
-  const details = costDataList.map((costData) =>
-    calculateCommitmentCost(costData, params)
+): Promise<AggregatedResult> {
+  const details = await Promise.all(
+    costDataList.map((costData) => calculateCommitmentCost(costData, params))
   );
 
   const totalOndemandCost = details.reduce(

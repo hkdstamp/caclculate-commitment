@@ -955,9 +955,9 @@ export function normalizeServiceName(service: string): string {
 }
 
 /**
- * 指定された条件に一致する予約割引を検索する
+ * 指定された条件に一致する予約割引を検索する（静的カタログから）
  */
-export function findReservationDiscounts(
+function findReservationDiscountsFromCatalog(
   service: string,
   region: string,
   instanceType?: string,
@@ -985,6 +985,74 @@ export function findReservationDiscounts(
     
     return serviceMatch && regionMatch && typeMatch && instanceMatch;
   });
+}
+
+/**
+ * 指定された条件に一致する予約割引を検索する
+ * AWS Price List APIが有効な場合は、APIからリアルタイムで取得
+ */
+export async function findReservationDiscounts(
+  service: string,
+  region: string,
+  instanceType?: string,
+  reservationType?: 'RI' | 'SP'
+): Promise<ReservationDiscount[]> {
+  // 静的カタログから検索
+  const catalogResults = findReservationDiscountsFromCatalog(
+    service,
+    region,
+    instanceType,
+    reservationType
+  );
+
+  // AWS Price List APIが無効、またはSPの場合は静的カタログを返す
+  if (process.env.ENABLE_AWS_PRICE_API !== 'true' || reservationType === 'SP') {
+    return catalogResults;
+  }
+
+  // RIの場合、AWS Price List APIから取得を試みる
+  if (instanceType && reservationType === 'RI') {
+    try {
+      const { fetchPricingFromAWS, generateCacheKey } = await import('./aws-pricing-client');
+      const { pricingCache } = await import('./pricing-cache');
+      
+      const cacheKey = generateCacheKey(service, instanceType, region);
+      
+      // キャッシュをチェック
+      const cachedData = pricingCache.get(cacheKey);
+      if (cachedData) {
+        console.log('Using cached pricing data for', cacheKey);
+        return cachedData;
+      }
+
+      // AWS APIから取得
+      console.log('Fetching pricing from AWS API for', cacheKey);
+      const apiResults = await fetchPricingFromAWS(service, instanceType, region);
+      
+      if (apiResults.length > 0) {
+        // キャッシュに保存
+        pricingCache.set(cacheKey, apiResults);
+        return apiResults;
+      }
+    } catch (error) {
+      console.error('Error fetching from AWS Price API, falling back to catalog:', error);
+    }
+  }
+
+  // フォールバック: 静的カタログを返す
+  return catalogResults;
+}
+
+/**
+ * 同期版の検索関数（後方互換性のため）
+ */
+export function findReservationDiscountsSync(
+  service: string,
+  region: string,
+  instanceType?: string,
+  reservationType?: 'RI' | 'SP'
+): ReservationDiscount[] {
+  return findReservationDiscountsFromCatalog(service, region, instanceType, reservationType);
 }
 
 /**

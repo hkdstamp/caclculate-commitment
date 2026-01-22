@@ -104,6 +104,31 @@ account_id,service,product_instancetype,lineitem_operation,lineitem_usagetype,pr
 npm install
 ```
 
+### 環境変数の設定
+
+AWS Price List APIを使用する場合は、環境変数を設定します：
+
+```bash
+cp .env.example .env.local
+```
+
+`.env.local`を編集して以下を設定：
+
+```env
+# AWS Credentials
+AWS_ACCESS_KEY_ID=your_access_key_id_here
+AWS_SECRET_ACCESS_KEY=your_secret_access_key_here
+AWS_REGION=us-east-1
+
+# Enable AWS Price List API (true/false)
+ENABLE_AWS_PRICE_API=true
+
+# Cache duration (seconds)
+PRICE_CACHE_DURATION=86400
+```
+
+**注意**: AWS Price List APIを使用しない場合は、`ENABLE_AWS_PRICE_API=false`のまま（デフォルト）にしてください。静的カタログが使用されます。
+
 ### 開発サーバーの起動
 
 ```bash
@@ -144,13 +169,33 @@ npm run start
 
 ## 🎯 予約割引カタログについて
 
-現在、`lib/reservation-catalog.ts` にハードコードされたサンプルデータを使用しています。
+### 💡 2つのモード
 
-実際の運用では、以下のような方法でデータを取得することを推奨します：
+#### 1. 静的カタログモード（デフォルト）
+`lib/reservation-catalog.ts` にハードコードされたサンプルデータを使用します。
+- **メリット**: セットアップ不要、高速
+- **デメリット**: 価格が最新でない可能性がある
 
-1. **AWS Price List API**: AWSの公式価格APIから最新の価格を取得
-2. **データベース**: 定期的に更新される価格データをデータベースに保存
-3. **外部API**: 独自の価格管理システムからAPIで取得
+#### 2. AWS Price List APIモード（推奨）
+リアルタイムでAWS公式価格を取得します。
+- **メリット**: 常に最新の価格、正確なコスト計算
+- **デメリット**: AWSアクセスキーが必要、初回は遅い（キャッシュ後は高速）
+
+### 🔧 AWS Price List API統合
+
+環境変数で`ENABLE_AWS_PRICE_API=true`に設定すると、以下の動作になります：
+
+1. **リアルタイム取得**: RIの価格をAWS Price List APIから取得
+2. **キャッシュ機能**: 取得した価格を24時間キャッシュ（設定可能）
+3. **フォールバック**: API失敗時は静的カタログを使用
+4. **SPは静的**: Savings Plansは静的カタログを使用（APIの制約）
+
+### 📊 対応するAWS Price List API
+
+- **EC2**: Reserved Instanceの価格（NoUpfront/PartialUpfront/AllUpfront）
+- **RDS**: Reserved Instanceの価格
+- **リージョン**: 全リージョン対応
+- **契約期間**: 1年、3年
 
 ### 対応サービス（サンプルデータ）
 

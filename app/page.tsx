@@ -13,6 +13,7 @@ export default function Home() {
   const [riRate, setRiRate] = useState(1.0);
   const [spRate, setSpRate] = useState(1.0);
   const [results, setResults] = useState<AggregatedResult | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleDataLoaded = (data: AWSCostData[]) => {
     setCostData(data);
@@ -27,18 +28,25 @@ export default function Home() {
     }
   };
 
-  const calculateResults = (
+  const calculateResults = async (
     data: AWSCostData[],
     riAppliedRate: number,
     spAppliedRate: number
   ) => {
-    const calculatedResults = aggregateResults(data, {
-      ri_applied_rate: riAppliedRate,
-      sp_applied_rate: spAppliedRate,
-      insurance_rate_30d: 0.5, // 30日保証: 50%
-      insurance_rate_1y: 0.3,  // 1年保証: 30%
-    });
-    setResults(calculatedResults);
+    setLoading(true);
+    try {
+      const calculatedResults = await aggregateResults(data, {
+        ri_applied_rate: riAppliedRate,
+        sp_applied_rate: spAppliedRate,
+        insurance_rate_30d: 0.5, // 30日保証: 50%
+        insurance_rate_1y: 0.3,  // 1年保証: 30%
+      });
+      setResults(calculatedResults);
+    } catch (error) {
+      console.error('Error calculating results:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -72,8 +80,42 @@ export default function Home() {
           {/* 適用率設定 */}
           <ApplyRateConfig onRateChange={handleRateChange} />
 
+          {/* ローディング表示 */}
+          {loading && (
+            <div className="bg-white rounded-lg shadow-md p-12 text-center mb-6">
+              <div className="flex items-center justify-center">
+                <svg
+                  className="animate-spin h-12 w-12 text-primary-600"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+              </div>
+              <p className="text-lg text-gray-700 mt-4">
+                コミットメントコストを計算中...
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                AWS Price List APIから最新価格を取得しています
+              </p>
+            </div>
+          )}
+
           {/* 結果表示 */}
-          {results && (
+          {!loading && results && (
             <>
               <ResultsSummary results={results} />
               <ResultsTable results={results} />
