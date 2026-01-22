@@ -15,12 +15,13 @@ export default function ResultsTable({ results }: ResultsTableProps) {
     return new Intl.NumberFormat('ja-JP', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 2,
+      minimumFractionDigits: 3,
+      maximumFractionDigits: 3,
     }).format(value);
   };
 
   const formatPercent = (value: number) => {
-    return `${value.toFixed(2)}%`;
+    return `${value.toFixed(3)}%`;
   };
 
   return (
@@ -171,7 +172,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                     {discount ? formatCurrency(discount.unit_price) : '-'}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-right text-gray-700">
-                    {detail.costData.usage_amount.toFixed(2)}
+                    {detail.costData.usage_amount.toFixed(3)}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-right font-medium text-gray-900">
                     {formatCurrency(detail.costData.ondemand_risk_cost)}

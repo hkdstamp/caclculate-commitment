@@ -11,12 +11,13 @@ export default function ResultsSummary({ results }: ResultsSummaryProps) {
     return new Intl.NumberFormat('ja-JP', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 2,
+      minimumFractionDigits: 3,
+      maximumFractionDigits: 3,
     }).format(value);
   };
 
   const formatPercent = (value: number) => {
-    return `${value.toFixed(2)}%`;
+    return `${value.toFixed(3)}%`;
   };
 
   return (
