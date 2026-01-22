@@ -73,7 +73,8 @@ account_id,service,lineitem_resourceid,product_instancetype,lineitem_operation,l
 ```
 適用オンデマンド = オンデマンドコスト × 適用率
 コスト削減額 = max(0, 適用オンデマンド - コミットメントコスト)
-返金額 = max(0, コミットメントコスト - 適用オンデマンド)
+返金額 = オンデマンドコストとコミットメントコストが同額の場合は0、
+        それ以外は max(0, コミットメントコスト - 適用オンデマンド)
 ```
 
 ### 保険料と最終支払額

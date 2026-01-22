@@ -45,7 +45,8 @@ export async function calculateCommitmentCost(
 
   const riAppliedOndemand = ondemandCost * params.ri_applied_rate;
   const riCostReduction = Math.max(0, riAppliedOndemand - riCommitmentCost);
-  const riRefund = Math.max(0, riCommitmentCost - riAppliedOndemand);
+  // オンデマンドコストとコミットメントコストが同額の場合、返金は0
+  const riRefund = riCommitmentCost === ondemandCost ? 0 : Math.max(0, riCommitmentCost - riAppliedOndemand);
 
   // 保険料 = コスト削減額 × 保険料率（コスト削減額が0以下の場合は保険料も0）
   const riInsurance30d = riCostReduction > 0 ? riCostReduction * params.insurance_rate_30d : 0;
@@ -72,7 +73,8 @@ export async function calculateCommitmentCost(
 
   const spAppliedOndemand = ondemandCost * params.sp_applied_rate;
   const spCostReduction = Math.max(0, spAppliedOndemand - spCommitmentCost);
-  const spRefund = Math.max(0, spCommitmentCost - spAppliedOndemand);
+  // オンデマンドコストとコミットメントコストが同額の場合、返金は0
+  const spRefund = spCommitmentCost === ondemandCost ? 0 : Math.max(0, spCommitmentCost - spAppliedOndemand);
 
   // 保険料 = コスト削減額 × 保険料率（コスト削減額が0以下の場合は保険料も0）
   const spInsurance30d = spCostReduction > 0 ? spCostReduction * params.insurance_rate_30d : 0;
