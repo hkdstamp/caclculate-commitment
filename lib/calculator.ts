@@ -47,11 +47,12 @@ export async function calculateCommitmentCost(
   const riCostReduction = Math.max(0, riAppliedOndemand - riCommitmentCost);
   const riRefund = Math.max(0, riCommitmentCost - riAppliedOndemand);
 
-  const riInsurance30d = riCommitmentCost * params.insurance_rate_30d;
-  const riInsurance1y = riCommitmentCost * params.insurance_rate_1y;
+  // 保険料 = コスト削減額 × 保険料率（コスト削減額が0以下の場合は保険料も0）
+  const riInsurance30d = riCostReduction > 0 ? riCostReduction * params.insurance_rate_30d : 0;
+  const riInsurance1y = riCostReduction > 0 ? riCostReduction * params.insurance_rate_1y : 0;
 
-  const riFinalPayment30d = riCommitmentCost + riInsurance30d - riCostReduction;
-  const riFinalPayment1y = riCommitmentCost + riInsurance1y - riCostReduction;
+  const riFinalPayment30d = riCommitmentCost + riInsurance30d;
+  const riFinalPayment1y = riCommitmentCost + riInsurance1y;
 
   const riEffectiveDiscountRate30d =
     ondemandCost > 0
@@ -73,11 +74,12 @@ export async function calculateCommitmentCost(
   const spCostReduction = Math.max(0, spAppliedOndemand - spCommitmentCost);
   const spRefund = Math.max(0, spCommitmentCost - spAppliedOndemand);
 
-  const spInsurance30d = spCommitmentCost * params.insurance_rate_30d;
-  const spInsurance1y = spCommitmentCost * params.insurance_rate_1y;
+  // 保険料 = コスト削減額 × 保険料率（コスト削減額が0以下の場合は保険料も0）
+  const spInsurance30d = spCostReduction > 0 ? spCostReduction * params.insurance_rate_30d : 0;
+  const spInsurance1y = spCostReduction > 0 ? spCostReduction * params.insurance_rate_1y : 0;
 
-  const spFinalPayment30d = spCommitmentCost + spInsurance30d - spCostReduction;
-  const spFinalPayment1y = spCommitmentCost + spInsurance1y - spCostReduction;
+  const spFinalPayment30d = spCommitmentCost + spInsurance30d;
+  const spFinalPayment1y = spCommitmentCost + spInsurance1y;
 
   const spEffectiveDiscountRate30d =
     ondemandCost > 0
