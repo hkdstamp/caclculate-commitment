@@ -94,10 +94,50 @@ export const reservationCatalog: ReservationDiscount[] = [
   {
     service: 'Amazon Elastic Compute Cloud',
     contract_years: 1,
+    payment_method: 'NoUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'm5.large',
+    unit_price: 0.0792,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 1,
+    payment_method: 'PartialUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'm5.large',
+    unit_price: 0.0756,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 1,
     payment_method: 'AllUpfront',
     region: 'ap-northeast-1',
     instance_type: 'm5.large',
     unit_price: 0.0720,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 3,
+    payment_method: 'NoUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'm5.large',
+    unit_price: 0.0528,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 3,
+    payment_method: 'PartialUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'm5.large',
+    unit_price: 0.0504,
     unit_price_unit: 'per hour',
     reservation_type: 'RI',
   },
@@ -270,10 +310,50 @@ export const reservationCatalog: ReservationDiscount[] = [
   {
     service: 'Amazon Elastic Compute Cloud',
     contract_years: 1,
+    payment_method: 'NoUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'r5.xlarge',
+    unit_price: 0.211,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 1,
+    payment_method: 'PartialUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'r5.xlarge',
+    unit_price: 0.202,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 1,
     payment_method: 'AllUpfront',
     region: 'ap-northeast-1',
     instance_type: 'r5.xlarge',
     unit_price: 0.192,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 3,
+    payment_method: 'NoUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'r5.xlarge',
+    unit_price: 0.141,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 3,
+    payment_method: 'PartialUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'r5.xlarge',
+    unit_price: 0.135,
     unit_price_unit: 'per hour',
     reservation_type: 'RI',
   },
@@ -292,10 +372,50 @@ export const reservationCatalog: ReservationDiscount[] = [
   {
     service: 'Amazon Elastic Compute Cloud',
     contract_years: 1,
+    payment_method: 'NoUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'r5.2xlarge',
+    unit_price: 0.422,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 1,
+    payment_method: 'PartialUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'r5.2xlarge',
+    unit_price: 0.403,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 1,
     payment_method: 'AllUpfront',
     region: 'ap-northeast-1',
     instance_type: 'r5.2xlarge',
     unit_price: 0.384,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 3,
+    payment_method: 'NoUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'r5.2xlarge',
+    unit_price: 0.282,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 3,
+    payment_method: 'PartialUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'r5.2xlarge',
+    unit_price: 0.269,
     unit_price_unit: 'per hour',
     reservation_type: 'RI',
   },
@@ -314,10 +434,50 @@ export const reservationCatalog: ReservationDiscount[] = [
   {
     service: 'Amazon Elastic Compute Cloud',
     contract_years: 1,
+    payment_method: 'NoUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'r5.4xlarge',
+    unit_price: 0.845,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 1,
+    payment_method: 'PartialUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'r5.4xlarge',
+    unit_price: 0.806,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 1,
     payment_method: 'AllUpfront',
     region: 'ap-northeast-1',
     instance_type: 'r5.4xlarge',
     unit_price: 0.768,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 3,
+    payment_method: 'NoUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'r5.4xlarge',
+    unit_price: 0.563,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 3,
+    payment_method: 'PartialUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'r5.4xlarge',
+    unit_price: 0.538,
     unit_price_unit: 'per hour',
     reservation_type: 'RI',
   },
@@ -336,10 +496,50 @@ export const reservationCatalog: ReservationDiscount[] = [
   {
     service: 'Amazon Elastic Compute Cloud',
     contract_years: 1,
+    payment_method: 'NoUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'c5.xlarge',
+    unit_price: 0.141,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 1,
+    payment_method: 'PartialUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'c5.xlarge',
+    unit_price: 0.134,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 1,
     payment_method: 'AllUpfront',
     region: 'ap-northeast-1',
     instance_type: 'c5.xlarge',
     unit_price: 0.128,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 3,
+    payment_method: 'NoUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'c5.xlarge',
+    unit_price: 0.094,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Elastic Compute Cloud',
+    contract_years: 3,
+    payment_method: 'PartialUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'c5.xlarge',
+    unit_price: 0.089,
     unit_price_unit: 'per hour',
     reservation_type: 'RI',
   },
@@ -533,10 +733,50 @@ export const reservationCatalog: ReservationDiscount[] = [
   {
     service: 'Amazon Relational Database Service',
     contract_years: 1,
+    payment_method: 'NoUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'db.r5.xlarge',
+    unit_price: 0.409,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Relational Database Service',
+    contract_years: 1,
+    payment_method: 'PartialUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'db.r5.xlarge',
+    unit_price: 0.391,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Relational Database Service',
+    contract_years: 1,
     payment_method: 'AllUpfront',
     region: 'ap-northeast-1',
     instance_type: 'db.r5.xlarge',
     unit_price: 0.372,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Relational Database Service',
+    contract_years: 3,
+    payment_method: 'NoUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'db.r5.xlarge',
+    unit_price: 0.273,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Relational Database Service',
+    contract_years: 3,
+    payment_method: 'PartialUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'db.r5.xlarge',
+    unit_price: 0.261,
     unit_price_unit: 'per hour',
     reservation_type: 'RI',
   },
@@ -555,10 +795,50 @@ export const reservationCatalog: ReservationDiscount[] = [
   {
     service: 'Amazon Relational Database Service',
     contract_years: 1,
+    payment_method: 'NoUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'db.r5.2xlarge',
+    unit_price: 0.818,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Relational Database Service',
+    contract_years: 1,
+    payment_method: 'PartialUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'db.r5.2xlarge',
+    unit_price: 0.781,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Relational Database Service',
+    contract_years: 1,
     payment_method: 'AllUpfront',
     region: 'ap-northeast-1',
     instance_type: 'db.r5.2xlarge',
     unit_price: 0.744,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Relational Database Service',
+    contract_years: 3,
+    payment_method: 'NoUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'db.r5.2xlarge',
+    unit_price: 0.546,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Relational Database Service',
+    contract_years: 3,
+    payment_method: 'PartialUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'db.r5.2xlarge',
+    unit_price: 0.521,
     unit_price_unit: 'per hour',
     reservation_type: 'RI',
   },
@@ -577,10 +857,50 @@ export const reservationCatalog: ReservationDiscount[] = [
   {
     service: 'Amazon Relational Database Service',
     contract_years: 1,
+    payment_method: 'NoUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'db.r5.4xlarge',
+    unit_price: 1.637,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Relational Database Service',
+    contract_years: 1,
+    payment_method: 'PartialUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'db.r5.4xlarge',
+    unit_price: 1.563,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Relational Database Service',
+    contract_years: 1,
     payment_method: 'AllUpfront',
     region: 'ap-northeast-1',
     instance_type: 'db.r5.4xlarge',
     unit_price: 1.488,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Relational Database Service',
+    contract_years: 3,
+    payment_method: 'NoUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'db.r5.4xlarge',
+    unit_price: 1.091,
+    unit_price_unit: 'per hour',
+    reservation_type: 'RI',
+  },
+  {
+    service: 'Amazon Relational Database Service',
+    contract_years: 3,
+    payment_method: 'PartialUpfront',
+    region: 'ap-northeast-1',
+    instance_type: 'db.r5.4xlarge',
+    unit_price: 1.042,
     unit_price_unit: 'per hour',
     reservation_type: 'RI',
   },
@@ -668,28 +988,38 @@ export function findReservationDiscounts(
 }
 
 /**
- * 最も安い予約割引を取得する（3年優先、同じ契約年数なら最安単価）
- * SPの場合はNoUpfrontを優先
+ * 最も安い予約割引を取得する
+ * - 3年契約を優先
+ * - 支払い方法の優先順位: NoUpfront > PartialUpfront > AllUpfront
+ * - 同じ条件なら最安単価
  */
 export function getBestReservationDiscount(
   discounts: ReservationDiscount[]
 ): ReservationDiscount | undefined {
   if (discounts.length === 0) return undefined;
 
-  // SPの場合はNoUpfrontのみをフィルタ
-  const filteredDiscounts = discounts[0]?.reservation_type === 'SP'
-    ? discounts.filter(d => d.payment_method === 'NoUpfront')
-    : discounts;
+  // 支払い方法の優先順位
+  const paymentPriority: Record<string, number> = {
+    'NoUpfront': 1,
+    'PartialUpfront': 2,
+    'AllUpfront': 3,
+  };
 
-  if (filteredDiscounts.length === 0) return undefined;
-
-  // 3年契約を優先、同じ契約年数なら最安単価
-  return filteredDiscounts.sort((a, b) => {
-    // 契約年数が異なる場合は3年を優先
+  // ソート: 3年優先 → 支払い方法優先 → 最安単価
+  return discounts.sort((a, b) => {
+    // 1. 契約年数が異なる場合は3年を優先
     if (a.contract_years !== b.contract_years) {
       return b.contract_years - a.contract_years;
     }
-    // 契約年数が同じ場合は単価が安い方を優先
+    
+    // 2. 支払い方法の優先順位（NoUpfront > PartialUpfront > AllUpfront）
+    const priorityA = paymentPriority[a.payment_method] || 99;
+    const priorityB = paymentPriority[b.payment_method] || 99;
+    if (priorityA !== priorityB) {
+      return priorityA - priorityB;
+    }
+    
+    // 3. 契約年数と支払い方法が同じ場合は単価が安い方を優先
     return a.unit_price - b.unit_price;
   })[0];
 }
