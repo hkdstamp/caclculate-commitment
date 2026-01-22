@@ -23,18 +23,21 @@ AWS Reserved Instance (RI) と Savings Plans (SP) のコスト最適化を行う
 以下の形式のCSVファイルをアップロードします：
 
 ```csv
-account_id,service,product_instancetype,lineitem_operation,lineitem_usagetype,product_region,lineitem_lineitemtype,ondemand_risk_cost,usage_amount
-123456789012,Amazon Elastic Compute Cloud,t3.medium,RunInstances,BoxUsage:t3.medium,ap-northeast-1,Usage,33.60,730
+account_id,service,lineitem_resourceid,product_instancetype,lineitem_operation,lineitem_usagetype,product_region,lineitem_lineitemtype,pricing_publicondemandrate,lineitem_unblendedrate,ondemand_risk_cost,usage_amount
+123456789012,Amazon Elastic Compute Cloud,i-0123456789abcdef0,t3.medium,RunInstances,BoxUsage:t3.medium,ap-northeast-1,Usage,0.0460,0.0460,33.60,730
 ```
 
 **必須カラム:**
 - `account_id`: アカウントID
 - `service`: サービス名
+- `lineitem_resourceid`: リソースID
 - `product_instancetype`: インスタンス種別
 - `lineitem_operation`: 課金操作種別
 - `lineitem_usagetype`: 課金詳細
 - `product_region`: リージョン
 - `lineitem_lineitemtype`: 課金種別
+- `pricing_publicondemandrate`: オンデマンド単価
+- `lineitem_unblendedrate`: 混合単価
 - `ondemand_risk_cost`: オンデマンドコスト
 - `usage_amount`: 利用量（時間、または実行数）
 

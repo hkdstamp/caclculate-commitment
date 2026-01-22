@@ -70,6 +70,9 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                 サービス
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                リソースID
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 リージョン
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -155,6 +158,9 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                 <tr key={index} className="hover:bg-gray-50">
                   <td className="px-4 py-3 whitespace-nowrap text-gray-900">
                     {detail.costData.service}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-gray-700 text-xs">
+                    {detail.costData.lineitem_resourceid || '-'}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-gray-700">
                     {detail.costData.product_region}

@@ -2,11 +2,14 @@
 export interface AWSCostData {
   account_id: string;
   service: string;
+  lineitem_resourceid: string;
   product_instancetype: string;
   lineitem_operation: string;
   lineitem_usagetype: string;
   product_region: string;
   lineitem_lineitemtype: string;
+  pricing_publicondemandrate: number;
+  lineitem_unblendedrate: number;
   ondemand_risk_cost: number;
   usage_amount: number;
 }

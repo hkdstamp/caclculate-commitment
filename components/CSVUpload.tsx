@@ -35,11 +35,14 @@ export default function CSVUpload({ onDataLoaded }: CSVUploadProps) {
             return {
               account_id: row.account_id,
               service: row.service,
+              lineitem_resourceid: row.lineitem_resourceid || '',
               product_instancetype: row.product_instancetype || '',
               lineitem_operation: row.lineitem_operation || '',
               lineitem_usagetype: row.lineitem_usagetype || '',
               product_region: row.product_region || '',
               lineitem_lineitemtype: row.lineitem_lineitemtype || '',
+              pricing_publicondemandrate: parseFloat(row.pricing_publicondemandrate || '0'),
+              lineitem_unblendedrate: parseFloat(row.lineitem_unblendedrate || '0'),
               ondemand_risk_cost: parseFloat(row.ondemand_risk_cost || '0'),
               usage_amount: parseFloat(row.usage_amount || '0'),
             };
@@ -127,11 +130,14 @@ export default function CSVUpload({ onDataLoaded }: CSVUploadProps) {
         <div className="text-xs text-blue-800 space-y-1">
           <p>• account_id: アカウントID</p>
           <p>• service: サービス名</p>
+          <p>• lineitem_resourceid: リソースID</p>
           <p>• product_instancetype: インスタンス種別</p>
           <p>• lineitem_operation: 課金操作種別</p>
           <p>• lineitem_usagetype: 課金詳細</p>
           <p>• product_region: リージョン</p>
           <p>• lineitem_lineitemtype: 課金種別</p>
+          <p>• pricing_publicondemandrate: オンデマンド単価</p>
+          <p>• lineitem_unblendedrate: 混合単価</p>
           <p>• ondemand_risk_cost: オンデマンドコスト</p>
           <p>• usage_amount: 利用量（時間、または、実行数）</p>
         </div>
