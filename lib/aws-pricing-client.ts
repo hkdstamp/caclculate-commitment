@@ -7,6 +7,48 @@ import { ReservationDiscount } from './types';
 import { normalizeServiceName } from './reservation-catalog';
 
 /**
+ * スリープ関数（ミリ秒）
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * エクスポネンシャルバックオフでリトライを実行
+ */
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = MAX_RETRIES,
+  initialDelay: number = INITIAL_RETRY_DELAY
+): Promise<T> {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      lastError = error;
+      
+      // ThrottlingExceptionの場合のみリトライ
+      if (error.name === 'ThrottlingException' || error.name === 'TooManyRequestsException') {
+        const delay = initialDelay * Math.pow(2, attempt); // エクスポネンシャルバックオフ
+        const jitter = Math.random() * 1000; // ジッターを追加
+        const totalDelay = delay + jitter;
+        
+        console.log(`⚠️ ThrottlingException detected. Retrying in ${Math.round(totalDelay)}ms (attempt ${attempt + 1}/${maxRetries})...`);
+        await sleep(totalDelay);
+        continue;
+      }
+      
+      // それ以外のエラーは即座にスロー
+      throw error;
+    }
+  }
+  
+  throw new Error(`Max retries (${maxRetries}) exceeded. Last error: ${lastError?.message}`);
+}
+
+/**
  * AWS Pricing APIクライアントの初期化
  */
 function getPricingClient(): PricingClient | null {
@@ -69,6 +111,24 @@ function getRegionDescription(regionCode: string): string {
 }
 
 /**
+ * レート制限用の遅延（API呼び出し間隔）
+ * 環境変数で設定可能。デフォルトは200ms
+ */
+const API_CALL_DELAY = parseInt(process.env.AWS_API_CALL_DELAY || '200', 10);
+
+/**
+ * リトライ最大回数
+ * 環境変数で設定可能。デフォルトは5回
+ */
+const MAX_RETRIES = parseInt(process.env.AWS_API_MAX_RETRIES || '5', 10);
+
+/**
+ * リトライ初期遅延（ミリ秒）
+ * 環境変数で設定可能。デフォルトは1000ms（1秒）
+ */
+const INITIAL_RETRY_DELAY = parseInt(process.env.AWS_API_INITIAL_RETRY_DELAY || '1000', 10);
+
+/**
  * AWS Price List APIからEC2のRI価格を取得
  */
 async function fetchEC2RIPricing(
@@ -117,7 +177,14 @@ async function fetchEC2RIPricing(
       };
 
       const command = new GetProductsCommand(input);
-      const response = await client.send(command);
+      
+      // リトライロジック付きでAPI呼び出し
+      const response = await retryWithBackoff(async () => {
+        return await client.send(command);
+      });
+      
+      // レート制限対策: API呼び出し間に遅延を追加
+      await sleep(API_CALL_DELAY);
 
       if (response.PriceList) {
         for (const priceItem of response.PriceList) {
@@ -201,7 +268,14 @@ async function fetchRDSRIPricing(
       };
 
       const command = new GetProductsCommand(input);
-      const response = await client.send(command);
+      
+      // リトライロジック付きでAPI呼び出し
+      const response = await retryWithBackoff(async () => {
+        return await client.send(command);
+      });
+      
+      // レート制限対策: API呼び出し間に遅延を追加
+      await sleep(API_CALL_DELAY);
 
       if (response.PriceList) {
         for (const priceItem of response.PriceList) {

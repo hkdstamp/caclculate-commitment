@@ -158,9 +158,16 @@ ENABLE_AWS_PRICE_API=true
 
 # Cache duration (seconds)
 PRICE_CACHE_DURATION=86400
+
+# AWS API Rate Limiting (ThrottlingException対策)
+AWS_API_CALL_DELAY=200           # API呼び出し間の遅延（ミリ秒）
+AWS_API_MAX_RETRIES=5            # ThrottlingException時の最大リトライ回数
+AWS_API_INITIAL_RETRY_DELAY=1000 # リトライ初期遅延（ミリ秒）
 ```
 
-**注意**: AWS Price List APIを使用しない場合は、`ENABLE_AWS_PRICE_API=false`のまま（デフォルト）にしてください。静的カタログが使用されます。
+**注意**: 
+- AWS Price List APIを使用しない場合は、`ENABLE_AWS_PRICE_API=false`のまま（デフォルト）にしてください。静的カタログが使用されます。
+- ThrottlingExceptionが頻発する場合は、`AWS_API_CALL_DELAY`を300-500msに増やしてください。
 
 ### 環境変数の確認方法
 
@@ -289,6 +296,10 @@ npm run start
 2. **キャッシュ機能**: 取得した価格を24時間キャッシュ（設定可能）
 3. **フォールバック**: API失敗時は静的カタログを使用
 4. **自動更新**: APIから最新の価格を自動取得
+5. **ThrottlingException対策**:
+   - エクスポネンシャルバックオフによる自動リトライ（最大5回）
+   - API呼び出し間に200msの遅延を挿入
+   - ジッター（ランダム遅延）による競合回避
 
 ### 📊 対応するAWS Price List API
 
