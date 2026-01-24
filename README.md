@@ -204,13 +204,53 @@ npm run build
 npm run start
 ```
 
+## 🏗️ アーキテクチャ
+
+### クライアント・サーバー分離
+
+このアプリケーションは、Next.js 15のApp Routerを使用し、クライアントとサーバーの責務を明確に分離しています：
+
+#### **クライアントサイド** (`'use client'`)
+- CSVファイルのアップロード
+- UIの状態管理（React useState）
+- ユーザー入力の処理
+- 結果の表示
+
+#### **サーバーサイド** (API Routes)
+- `/api/calculate`: コミットメントコスト計算
+- `/api/env-test`: 環境変数の確認
+- AWS Price List APIへのアクセス
+- 環境変数の読み込み（`process.env.*`）
+
+**重要**: 環境変数は**サーバーサイドでのみ**アクセス可能です。クライアントサイドでAWS APIを直接呼び出すことはできません。
+
+### データフロー
+
+```
+クライアント              サーバー
+┌─────────┐              ┌──────────┐
+│CSV Upload│──POST─────→│/api/     │
+│         │              │calculate │
+│         │              │          │──→ AWS Price List API
+│         │              │          │   (環境変数使用)
+│         │←─JSON Result─│          │
+│Results  │              │          │
+│Display  │              └──────────┘
+└─────────┘
+```
+
 ## 📁 プロジェクト構造
 
 ```
 /
 ├── app/                      # Next.js App Router
+│   ├── api/                  # サーバーサイドAPIルート
+│   │   ├── calculate/        # コミットメント計算API
+│   │   │   └── route.ts      # POST /api/calculate
+│   │   └── env-test/         # 環境変数テストAPI
+│   │       └── route.ts      # GET /api/env-test
 │   ├── layout.tsx            # ルートレイアウト
-│   ├── page.tsx              # メインページ
+│   ├── page.tsx              # メインページ（クライアント）
 │   └── globals.css           # グローバルCSS
 ├── components/               # Reactコンポーネント
 │   ├── CSVUpload.tsx         # CSVアップロード

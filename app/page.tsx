@@ -6,7 +6,6 @@ import ApplyRateConfig from '@/components/ApplyRateConfig';
 import ResultsSummary from '@/components/ResultsSummary';
 import ResultsTable from '@/components/ResultsTable';
 import { AWSCostData, AggregatedResult } from '@/lib/types';
-import { aggregateResults } from '@/lib/calculator';
 
 export default function Home() {
   const [costData, setCostData] = useState<AWSCostData[]>([]);
@@ -14,6 +13,7 @@ export default function Home() {
   const [spRate, setSpRate] = useState(1.0);
   const [results, setResults] = useState<AggregatedResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleDataLoaded = (data: AWSCostData[]) => {
     setCostData(data);
@@ -34,16 +34,35 @@ export default function Home() {
     spAppliedRate: number
   ) => {
     setLoading(true);
+    setError(null);
     try {
-      const calculatedResults = await aggregateResults(data, {
-        ri_applied_rate: riAppliedRate,
-        sp_applied_rate: spAppliedRate,
-        insurance_rate_30d: 0.5, // 30日保証: 50%
-        insurance_rate_1y: 0.3,  // 1年保証: 30%
+      // サーバーサイドAPI経由で計算
+      const response = await fetch('/api/calculate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          costData: data,
+          params: {
+            ri_applied_rate: riAppliedRate,
+            sp_applied_rate: spAppliedRate,
+            insurance_rate_30d: 0.5, // 30日保証: 50%
+            insurance_rate_1y: 0.3,  // 1年保証: 30%
+          },
+        }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Calculation failed');
+      }
+
+      const calculatedResults = await response.json();
       setResults(calculatedResults);
     } catch (error) {
       console.error('Error calculating results:', error);
+      setError(error instanceof Error ? error.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -66,6 +85,15 @@ export default function Home() {
 
       {/* CSVアップロード */}
       <CSVUpload onDataLoaded={handleDataLoaded} />
+
+      {/* エラーメッセージ */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <p className="text-red-800 font-medium">
+            ❌ エラー: {error}
+          </p>
+        </div>
+      )}
 
       {/* データがロードされている場合のみ表示 */}
       {costData.length > 0 && (
