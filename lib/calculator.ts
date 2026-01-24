@@ -93,6 +93,20 @@ export async function calculateCommitmentCost(
       }
       
       riCommitmentCost = usageAmount * adjustedUnitPrice;
+      
+      // デバッグログ（開発時のみ）
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 RDS RI Calculation:', {
+          resourceId: costData.lineitem_resourceid,
+          instanceType: costData.product_instancetype,
+          isMultiAZ,
+          nodeCount,
+          baseUnitPrice: riDiscount.unit_price,
+          adjustedUnitPrice,
+          usageAmount,
+          riCommitmentCost,
+        });
+      }
     } else {
       // EC2など、通常の計算
       riCommitmentCost = usageAmount * riDiscount.unit_price;
