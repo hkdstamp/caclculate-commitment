@@ -162,6 +162,33 @@ PRICE_CACHE_DURATION=86400
 
 **注意**: AWS Price List APIを使用しない場合は、`ENABLE_AWS_PRICE_API=false`のまま（デフォルト）にしてください。静的カタログが使用されます。
 
+### 環境変数の確認方法
+
+環境変数が正しく読み込まれているか確認するには：
+
+```bash
+# 開発サーバーを起動後
+curl http://localhost:3000/api/env-test
+```
+
+レスポンス例：
+```json
+{
+  "message": "Environment Variables Test",
+  "env": {
+    "ENABLE_AWS_PRICE_API": "false",
+    "AWS_REGION": "us-east-1",
+    "AWS_ACCESS_KEY_ID": "SET (hidden)",
+    "AWS_SECRET_ACCESS_KEY": "SET (hidden)",
+    "PRICE_CACHE_DURATION": "86400",
+    "NODE_ENV": "development"
+  }
+}
+```
+
+- `AWS_ACCESS_KEY_ID` が "NOT SET" の場合、`.env.local` でクレデンシャルを設定してください
+- サーバー起動時に `- Environments: .env.local` が表示されることを確認してください
+
 ### 開発サーバーの起動
 
 ```bash

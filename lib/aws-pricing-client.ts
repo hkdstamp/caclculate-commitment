@@ -15,8 +15,17 @@ function getPricingClient(): PricingClient | null {
   const region = process.env.AWS_REGION || 'us-east-1';
   const enableApi = process.env.ENABLE_AWS_PRICE_API === 'true';
 
+  // デバッグ: 環境変数の読み込み状況を確認
+  console.log('🔍 Environment Variables Check:', {
+    ENABLE_AWS_PRICE_API: process.env.ENABLE_AWS_PRICE_API,
+    enableApi,
+    AWS_REGION: process.env.AWS_REGION,
+    hasAccessKeyId: !!accessKeyId,
+    hasSecretAccessKey: !!secretAccessKey,
+  });
+
   if (!enableApi || !accessKeyId || !secretAccessKey) {
-    console.log('AWS Price List API is disabled or credentials not configured');
+    console.log('⚠️ AWS Price List API is disabled or credentials not configured');
     return null;
   }
 
