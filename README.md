@@ -63,10 +63,16 @@ account_id,service,lineitem_resourceid,product_instancetype,lineitem_operation,l
 1. **RI検索**: サービス、インスタンスタイプ、リージョン、課金詳細から最適なRI割引を検索
 2. **SP検索**: サービス、リージョンから最適なSP割引を検索
 3. **優先順位**:
-   - 3年契約が存在する場合は3年契約を優先
-   - 3年契約がない場合は1年契約を優先
-   - 同じ契約年数の場合は最安単価を選択
+   - 3年NoUpfront契約を最優先
+   - 3年NoUpfrontが存在しない場合、**1年NoUpfrontにフォールバック**
+   - NoUpfront > PartialUpfront > AllUpfront の順で優先
+   - 同じ契約年数と支払い方法の場合は最安単価を選択
    - 予約サービスが存在しない場合はオンデマンドコストをそのまま使用
+
+4. **フォールバックロジック**:
+   - 3年NoUpfrontが見つからない → 1年NoUpfrontを使用
+   - 1年NoUpfrontも見つからない → 通常の優先順位（3年PartialUpfront等）を適用
+   - フォールバック時は開発モードでログ出力: `⚠️ Fallback: 3-year NoUpfront not found, using 1-year NoUpfront`
 
 #### RDSの特別な計算ルール
 

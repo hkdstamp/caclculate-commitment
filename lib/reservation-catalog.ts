@@ -1103,6 +1103,7 @@ export function findReservationDiscountsSync(
  * - 3年契約を優先
  * - 支払い方法の優先順位: NoUpfront > PartialUpfront > AllUpfront
  * - 同じ条件なら最安単価
+ * - フォールバック: 3年NoUpfrontがない場合、1年NoUpfrontを使用
  */
 export function getBestReservationDiscount(
   discounts: ReservationDiscount[]
@@ -1117,7 +1118,7 @@ export function getBestReservationDiscount(
   };
 
   // ソート: 3年優先 → 支払い方法優先 → 最安単価
-  return discounts.sort((a, b) => {
+  const sorted = discounts.sort((a, b) => {
     // 1. 契約年数が異なる場合は3年を優先
     if (a.contract_years !== b.contract_years) {
       return b.contract_years - a.contract_years;
@@ -1132,5 +1133,32 @@ export function getBestReservationDiscount(
     
     // 3. 契約年数と支払い方法が同じ場合は単価が安い方を優先
     return a.unit_price - b.unit_price;
-  })[0];
+  });
+
+  const bestDiscount = sorted[0];
+
+  // フォールバックロジック: 3年NoUpfrontがない場合、1年NoUpfrontを探す
+  if (bestDiscount.contract_years === 3 && bestDiscount.payment_method === 'NoUpfront') {
+    return bestDiscount;
+  }
+
+  // 3年NoUpfrontが見つからなかった場合
+  const threeYearNoUpfront = discounts.find(
+    d => d.contract_years === 3 && d.payment_method === 'NoUpfront'
+  );
+
+  if (!threeYearNoUpfront) {
+    // 1年NoUpfrontを探す
+    const oneYearNoUpfront = discounts.find(
+      d => d.contract_years === 1 && d.payment_method === 'NoUpfront'
+    );
+
+    if (oneYearNoUpfront) {
+      console.log('⚠️ Fallback: 3-year NoUpfront not found, using 1-year NoUpfront');
+      return oneYearNoUpfront;
+    }
+  }
+
+  // フォールバックが必要ない、または見つからない場合は通常の最適値を返す
+  return bestDiscount;
 }
