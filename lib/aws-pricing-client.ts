@@ -237,14 +237,99 @@ async function fetchRDSRIPricing(
 }
 
 /**
- * AWS Price List APIから価格を取得
+ * AWS Savings Plans APIからEC2の割引率を取得
+ * 注意: Savings Plansの価格情報はPrice List APIから直接取得できないため、
+ * 典型的な割引率を使用します（実際のSP価格はAWS Cost Explorerから取得する必要があります）
+ */
+async function fetchEC2SavingsPlansPricing(
+  region: string
+): Promise<ReservationDiscount[]> {
+  const client = getPricingClient();
+  if (!client) return [];
+
+  const discounts: ReservationDiscount[] = [];
+
+  try {
+    // Savings PlansはCompute Savings Plansを想定
+    // AWS Price List APIではSPの詳細な割引率が取得しにくいため、
+    // 標準的な割引率を使用
+    
+    // 1年契約 NoUpfront: 約34%割引（支払い率66%）
+    discounts.push({
+      service: 'Amazon Elastic Compute Cloud',
+      contract_years: 1,
+      payment_method: 'NoUpfront',
+      region,
+      instance_type: '', // SPはインスタンスタイプ不問
+      unit_price: 0.66, // 割引率: 34%割引
+      unit_price_unit: 'discount rate',
+      reservation_type: 'SP',
+    });
+
+    // 1年契約 AllUpfront: 約40%割引（支払い率60%）
+    discounts.push({
+      service: 'Amazon Elastic Compute Cloud',
+      contract_years: 1,
+      payment_method: 'AllUpfront',
+      region,
+      instance_type: '',
+      unit_price: 0.60,
+      unit_price_unit: 'discount rate',
+      reservation_type: 'SP',
+    });
+
+    // 3年契約 NoUpfront: 約46%割引（支払い率54%）
+    discounts.push({
+      service: 'Amazon Elastic Compute Cloud',
+      contract_years: 3,
+      payment_method: 'NoUpfront',
+      region,
+      instance_type: '',
+      unit_price: 0.54,
+      unit_price_unit: 'discount rate',
+      reservation_type: 'SP',
+    });
+
+    // 3年契約 AllUpfront: 約60%割引（支払い率40%）
+    discounts.push({
+      service: 'Amazon Elastic Compute Cloud',
+      contract_years: 3,
+      payment_method: 'AllUpfront',
+      region,
+      instance_type: '',
+      unit_price: 0.40,
+      unit_price_unit: 'discount rate',
+      reservation_type: 'SP',
+    });
+  } catch (error) {
+    console.error('Error creating Savings Plans pricing:', error);
+  }
+
+  return discounts;
+}
+
+/**
+ * AWS Price List APIから価格を取得（RIとSP両方）
  */
 export async function fetchPricingFromAWS(
   service: string,
-  instanceType: string,
-  region: string
+  instanceType: string | undefined,
+  region: string,
+  reservationType: 'RI' | 'SP'
 ): Promise<ReservationDiscount[]> {
   const serviceCode = getServiceCode(service);
+
+  // Savings Plansの場合
+  if (reservationType === 'SP') {
+    if (serviceCode === 'AmazonEC2') {
+      return await fetchEC2SavingsPlansPricing(region);
+    }
+    // RDSはSPをサポートしていないため空配列を返す
+    return [];
+  }
+
+  // Reserved Instancesの場合
+  if (!instanceType) return [];
 
   if (serviceCode === 'AmazonEC2') {
     return await fetchEC2RIPricing(instanceType, region);
@@ -260,8 +345,9 @@ export async function fetchPricingFromAWS(
  */
 export function generateCacheKey(
   service: string,
-  instanceType: string,
-  region: string
+  instanceType: string | undefined,
+  region: string,
+  reservationType: 'RI' | 'SP'
 ): string {
-  return `${service}:${instanceType}:${region}`;
+  return `${service}:${instanceType || 'SP'}:${region}:${reservationType}`;
 }

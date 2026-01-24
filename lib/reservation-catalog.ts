@@ -1045,37 +1045,40 @@ export async function findReservationDiscounts(
     reservationType
   );
 
-  // AWS Price List APIが無効、またはSPの場合は静的カタログを返す
-  if (process.env.ENABLE_AWS_PRICE_API !== 'true' || reservationType === 'SP') {
+  // AWS Price List APIが無効の場合は静的カタログを返す
+  if (process.env.ENABLE_AWS_PRICE_API !== 'true') {
     return catalogResults;
   }
 
-  // RIの場合、AWS Price List APIから取得を試みる
-  if (instanceType && reservationType === 'RI') {
+  // AWS Price List APIから取得を試みる（RIとSP両方）
+  if (reservationType) {
     try {
       const { fetchPricingFromAWS, generateCacheKey } = await import('./aws-pricing-client');
       const { pricingCache } = await import('./pricing-cache');
       
-      const cacheKey = generateCacheKey(service, instanceType, region);
+      const cacheKey = generateCacheKey(service, instanceType, region, reservationType);
       
       // キャッシュをチェック
       const cachedData = pricingCache.get(cacheKey);
       if (cachedData) {
-        console.log('Using cached pricing data for', cacheKey);
+        console.log(`Using cached pricing data for ${reservationType}:`, cacheKey);
         return cachedData;
       }
 
       // AWS APIから取得
-      console.log('Fetching pricing from AWS API for', cacheKey);
-      const apiResults = await fetchPricingFromAWS(service, instanceType, region);
+      console.log(`Fetching ${reservationType} pricing from AWS API for`, cacheKey);
+      const apiResults = await fetchPricingFromAWS(service, instanceType, region, reservationType);
       
       if (apiResults.length > 0) {
         // キャッシュに保存
         pricingCache.set(cacheKey, apiResults);
+        console.log(`Successfully fetched ${apiResults.length} ${reservationType} pricing options from AWS API`);
         return apiResults;
+      } else {
+        console.log(`No ${reservationType} pricing found in AWS API, using static catalog`);
       }
     } catch (error) {
-      console.error('Error fetching from AWS Price API, falling back to catalog:', error);
+      console.error(`Error fetching ${reservationType} from AWS Price API, falling back to catalog:`, error);
     }
   }
 

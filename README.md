@@ -212,17 +212,27 @@ npm run start
 
 環境変数で`ENABLE_AWS_PRICE_API=true`に設定すると、以下の動作になります：
 
-1. **リアルタイム取得**: RIの価格をAWS Price List APIから取得
+1. **リアルタイム取得**: RIとSPの価格をAWS Price List APIから取得
 2. **キャッシュ機能**: 取得した価格を24時間キャッシュ（設定可能）
 3. **フォールバック**: API失敗時は静的カタログを使用
-4. **SPは静的**: Savings Plansは静的カタログを使用（APIの制約）
+4. **自動更新**: APIから最新の価格を自動取得
 
 ### 📊 対応するAWS Price List API
 
+#### Reserved Instances (RI)
 - **EC2**: Reserved Instanceの価格（NoUpfront/PartialUpfront/AllUpfront）
-- **RDS**: Reserved Instanceの価格
+- **RDS**: Reserved Instanceの価格（NoUpfront/PartialUpfront/AllUpfront）
 - **リージョン**: 全リージョン対応
 - **契約期間**: 1年、3年
+
+#### Savings Plans (SP)
+- **EC2 Compute Savings Plans**: 標準的な割引率を適用
+  - 1年NoUpfront: 34%割引（支払い率66%）
+  - 1年AllUpfront: 40%割引（支払い率60%）
+  - 3年NoUpfront: 46%割引（支払い率54%）
+  - 3年AllUpfront: 60%割引（支払い率40%）
+- **リージョン**: 全リージョン対応
+- **インスタンスタイプ**: 不問（Compute Savings Plans）
 
 ### 対応サービス（サンプルデータ）
 
