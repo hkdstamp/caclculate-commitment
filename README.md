@@ -68,6 +68,29 @@ account_id,service,lineitem_resourceid,product_instancetype,lineitem_operation,l
    - 同じ契約年数の場合は最安単価を選択
    - 予約サービスが存在しない場合はオンデマンドコストをそのまま使用
 
+#### RDSの特別な計算ルール
+
+RDS（Amazon Relational Database Service）の場合、以下の要素を考慮します：
+
+- **Node数の計算**: `Node数 = 利用額 / (オンデマンド単価 × 利用量)`
+- **MultiAZ判定**: `lineitem_usagetype` に "Multi-AZ" が含まれている場合、MultiAZと判定
+- **コミットメントコストの計算**:
+  ```
+  調整後単価 = RI単価 × Node数
+  
+  MultiAZの場合:
+    調整後単価 = 調整後単価 × 2（プライマリ + スタンバイ）
+  
+  コミットメントコスト = 利用量 × 調整後単価
+  ```
+
+**計算例**:
+- RI単価: $0.372/時間
+- Node数: 2
+- MultiAZ: Yes
+- 利用量: 744時間
+- **コミットメントコスト**: 744 × ($0.372 × 2 × 2) = **$1,107.072**
+
 ### コスト削減額と返金額
 
 ```

@@ -4,4 +4,5 @@ account_id,service,lineitem_resourceid,product_instancetype,lineitem_operation,l
 123456789012,Amazon Elastic Compute Cloud,i-0123456789abcdef2,m5.large,RunInstances,BoxUsage:m5.large,ap-northeast-1,Usage,0.1315,0.1315,96.00,730
 123456789012,Amazon Relational Database Service,db-ABCDEFGHIJKLMNOP,db.t3.medium,CreateDBInstance,RDS:db.t3.medium,ap-northeast-1,Usage,0.0800,0.0800,58.40,730
 123456789012,Amazon Relational Database Service,db-QRSTUVWXYZ123456,db.m5.large,CreateDBInstance,RDS:db.m5.large,ap-northeast-1,Usage,0.2192,0.2192,160.00,730
+123456789012,Amazon Relational Database Service,db-MULTIAZ789012345,db.r5.xlarge,CreateDBInstance:0020,APN1-Multi-AZUsage:db.r5.xl,ap-northeast-1,Usage,0.5270,0.5270,391.08,742
 123456789012,Amazon ElastiCache,cache-abc123def456,cache.t3.medium,CreateCacheCluster,ElastiCache:cache.t3.medium,ap-northeast-1,Usage,0.0658,0.0658,48.00,730

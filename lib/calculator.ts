@@ -11,6 +11,39 @@ import {
 } from './reservation-catalog';
 
 /**
+ * RDSのMultiAZ判定
+ * lineitem_usagetypeに"Multi-AZ"が含まれている場合、MultiAZと判定
+ */
+function isRDSMultiAZ(lineitemUsageType: string): boolean {
+  return lineitemUsageType.toLowerCase().includes('multi-az');
+}
+
+/**
+ * RDSのNode数を計算
+ * Node数 = 利用額 / (オンデマンド単価 × 利用量)
+ */
+function calculateRDSNodeCount(
+  ondemandCost: number,
+  publicOndemandRate: number,
+  usageAmount: number
+): number {
+  if (publicOndemandRate === 0 || usageAmount === 0) {
+    return 1; // デフォルトは1ノード
+  }
+  const calculatedNodes = ondemandCost / (publicOndemandRate * usageAmount);
+  return Math.max(1, Math.round(calculatedNodes)); // 最小1ノード、四捨五入
+}
+
+/**
+ * サービスがRDSかどうかを判定
+ */
+function isRDSService(service: string): boolean {
+  const normalizedService = service.toLowerCase();
+  return normalizedService.includes('rds') || 
+         normalizedService.includes('relational database');
+}
+
+/**
  * 単一のコストデータに対してコミットメントコストを計算（非同期版）
  */
 export async function calculateCommitmentCost(
@@ -39,9 +72,34 @@ export async function calculateCommitmentCost(
   const spDiscount = getBestReservationDiscount(spDiscounts);
 
   // RI計算
-  const riCommitmentCost = riDiscount
-    ? usageAmount * riDiscount.unit_price
-    : ondemandCost;
+  let riCommitmentCost: number;
+  
+  if (riDiscount) {
+    // RDSの場合、MultiAZとNode数を考慮
+    if (isRDSService(costData.service)) {
+      const isMultiAZ = isRDSMultiAZ(costData.lineitem_usagetype);
+      const nodeCount = calculateRDSNodeCount(
+        ondemandCost,
+        costData.pricing_publicondemandrate,
+        usageAmount
+      );
+      
+      // RDS RI単価をNode数で調整
+      let adjustedUnitPrice = riDiscount.unit_price * nodeCount;
+      
+      // MultiAZの場合、さらに2倍（プライマリ + スタンバイ）
+      if (isMultiAZ) {
+        adjustedUnitPrice *= 2;
+      }
+      
+      riCommitmentCost = usageAmount * adjustedUnitPrice;
+    } else {
+      // EC2など、通常の計算
+      riCommitmentCost = usageAmount * riDiscount.unit_price;
+    }
+  } else {
+    riCommitmentCost = ondemandCost;
+  }
 
   const riAppliedOndemand = ondemandCost * params.ri_applied_rate;
   const riCostReduction = Math.max(0, riAppliedOndemand - riCommitmentCost);
