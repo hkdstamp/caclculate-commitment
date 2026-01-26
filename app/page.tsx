@@ -145,7 +145,7 @@ export default function Home() {
           {/* 結果表示 */}
           {!loading && results && (
             <>
-              <ResultsSummary results={results} />
+              <ResultsSummary results={results} riRate={riRate} spRate={spRate} />
               <ResultsTable results={results} />
             </>
           )}

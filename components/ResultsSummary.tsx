@@ -4,9 +4,11 @@ import { AggregatedResult } from '@/lib/types';
 
 interface ResultsSummaryProps {
   results: AggregatedResult;
+  riRate: number;
+  spRate: number;
 }
 
-export default function ResultsSummary({ results }: ResultsSummaryProps) {
+export default function ResultsSummary({ results, riRate, spRate }: ResultsSummaryProps) {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('ja-JP', {
       style: 'currency',
@@ -22,9 +24,21 @@ export default function ResultsSummary({ results }: ResultsSummaryProps) {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">
-        📈 コスト最適化サマリー
-      </h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-gray-800">
+          📈 コスト最適化サマリー
+        </h2>
+        <div className="flex gap-4 text-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-600">RI適用率:</span>
+            <span className="font-bold text-primary-600">{(riRate * 100).toFixed(0)}%</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-600">SP適用率:</span>
+            <span className="font-bold text-secondary-600">{(spRate * 100).toFixed(0)}%</span>
+          </div>
+        </div>
+      </div>
 
       {/* オンデマンドコストと現在のコスト */}
       <div className="mb-6 grid md:grid-cols-2 gap-4">
