@@ -4,10 +4,9 @@ import { AggregatedResult } from '@/lib/types';
 
 interface ResultsSummaryProps {
   results: AggregatedResult;
-  reservationType?: 'RI' | 'SP' | 'Mix';
 }
 
-export default function ResultsSummary({ results, reservationType = 'Mix' }: ResultsSummaryProps) {
+export default function ResultsSummary({ results }: ResultsSummaryProps) {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('ja-JP', {
       style: 'currency',
@@ -54,9 +53,8 @@ export default function ResultsSummary({ results, reservationType = 'Mix' }: Res
         </div>
       </div>
 
-      <div className={`grid gap-6 ${reservationType === 'Mix' ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
-        {/* Mix結果（Mixモードのみ） */}
-        {reservationType === 'Mix' && (
+      <div className="grid gap-6 md:grid-cols-3">
+        {/* Mix結果（SPベース、SPがない場合はRI） */}
         <div className="border-2 border-purple-300 rounded-lg p-5 bg-purple-50">
           <h3 className="text-xl font-bold text-purple-800 mb-4 flex items-center">
             <span className="mr-2">🔀</span>
@@ -136,10 +134,8 @@ export default function ResultsSummary({ results, reservationType = 'Mix' }: Res
             </div>
           </div>
         </div>
-        )}
 
         {/* RI結果 */}
-        {(reservationType === 'RI' || reservationType === 'Mix') && (
         <div className="border-2 border-primary-300 rounded-lg p-5 bg-primary-50">
           <h3 className="text-xl font-bold text-primary-800 mb-4 flex items-center">
             <span className="mr-2">🔹</span>
@@ -219,10 +215,8 @@ export default function ResultsSummary({ results, reservationType = 'Mix' }: Res
             </div>
           </div>
         </div>
-        )}
 
         {/* SP結果 */}
-        {(reservationType === 'SP' || reservationType === 'Mix') && (
         <div className="border-2 border-secondary-300 rounded-lg p-5 bg-secondary-50">
           <h3 className="text-xl font-bold text-secondary-800 mb-4 flex items-center">
             <span className="mr-2">💎</span>
@@ -302,7 +296,6 @@ export default function ResultsSummary({ results, reservationType = 'Mix' }: Res
             </div>
           </div>
         </div>
-        )}
       </div>
     </div>
   );

@@ -8,7 +8,7 @@ interface ResultsTableProps {
 }
 
 export default function ResultsTable({ results }: ResultsTableProps) {
-  const [reservationType, setReservationType] = useState<'RI' | 'SP'>('RI');
+  const [reservationType, setReservationType] = useState<'RI' | 'SP' | 'Mix'>('Mix');
   const [insuranceType, setInsuranceType] = useState<'30d' | '1y'>('30d');
 
   const formatCurrency = (value: number) => {
@@ -26,6 +26,8 @@ export default function ResultsTable({ results }: ResultsTableProps) {
 
   const downloadCSV = () => {
     const isRI = reservationType === 'RI';
+    const isSP = reservationType === 'SP';
+    const isMix = reservationType === 'Mix';
     const is30d = insuranceType === '30d';
 
     // CSVヘッダー
@@ -50,38 +52,41 @@ export default function ResultsTable({ results }: ResultsTableProps) {
 
     // CSVデータ行
     const rows = results.details.map((detail) => {
-      const discount = isRI ? detail.ri_discount : detail.sp_discount;
-      const commitmentCost = isRI
-        ? detail.ri_commitment_cost
-        : detail.sp_commitment_cost;
-      const appliedRate = isRI
-        ? detail.ri_applied_rate
-        : detail.sp_applied_rate;
-      const costReduction = isRI
-        ? detail.ri_cost_reduction
-        : detail.sp_cost_reduction;
-      const refund = isRI ? detail.ri_refund : detail.sp_refund;
-      const insurance = isRI
-        ? is30d
-          ? detail.ri_insurance_30d
-          : detail.ri_insurance_1y
-        : is30d
-        ? detail.sp_insurance_30d
-        : detail.sp_insurance_1y;
-      const finalPayment = isRI
-        ? is30d
-          ? detail.ri_final_payment_30d
-          : detail.ri_final_payment_1y
-        : is30d
-        ? detail.sp_final_payment_30d
-        : detail.sp_final_payment_1y;
-      const effectiveRate = isRI
-        ? is30d
-          ? detail.ri_effective_discount_rate_30d
-          : detail.ri_effective_discount_rate_1y
-        : is30d
-        ? detail.sp_effective_discount_rate_30d
-        : detail.sp_effective_discount_rate_1y;
+      let discount, commitmentCost, appliedRate, costReduction, refund, insurance, finalPayment, effectiveRate;
+      
+      if (isMix) {
+        // Mix: SPがある場合はSP、ない場合はRI
+        const useSP = !!detail.sp_discount;
+        discount = useSP ? detail.sp_discount : detail.ri_discount;
+        commitmentCost = useSP ? detail.sp_commitment_cost : detail.ri_commitment_cost;
+        appliedRate = useSP ? detail.sp_applied_rate : detail.ri_applied_rate;
+        costReduction = useSP ? detail.sp_cost_reduction : detail.ri_cost_reduction;
+        refund = useSP ? detail.sp_refund : detail.ri_refund;
+        insurance = useSP
+          ? (is30d ? detail.sp_insurance_30d : detail.sp_insurance_1y)
+          : (is30d ? detail.ri_insurance_30d : detail.ri_insurance_1y);
+        finalPayment = useSP
+          ? (is30d ? detail.sp_final_payment_30d : detail.sp_final_payment_1y)
+          : (is30d ? detail.ri_final_payment_30d : detail.ri_final_payment_1y);
+        effectiveRate = useSP
+          ? (is30d ? detail.sp_effective_discount_rate_30d : detail.sp_effective_discount_rate_1y)
+          : (is30d ? detail.ri_effective_discount_rate_30d : detail.ri_effective_discount_rate_1y);
+      } else {
+        discount = isRI ? detail.ri_discount : detail.sp_discount;
+        commitmentCost = isRI ? detail.ri_commitment_cost : detail.sp_commitment_cost;
+        appliedRate = isRI ? detail.ri_applied_rate : detail.sp_applied_rate;
+        costReduction = isRI ? detail.ri_cost_reduction : detail.sp_cost_reduction;
+        refund = isRI ? detail.ri_refund : detail.sp_refund;
+        insurance = isRI
+          ? (is30d ? detail.ri_insurance_30d : detail.ri_insurance_1y)
+          : (is30d ? detail.sp_insurance_30d : detail.sp_insurance_1y);
+        finalPayment = isRI
+          ? (is30d ? detail.ri_final_payment_30d : detail.ri_final_payment_1y)
+          : (is30d ? detail.sp_final_payment_30d : detail.sp_final_payment_1y);
+        effectiveRate = isRI
+          ? (is30d ? detail.ri_effective_discount_rate_30d : detail.ri_effective_discount_rate_1y)
+          : (is30d ? detail.sp_effective_discount_rate_30d : detail.sp_effective_discount_rate_1y);
+      }
 
       return [
         detail.costData.service,
@@ -142,9 +147,10 @@ export default function ResultsTable({ results }: ResultsTableProps) {
             </label>
             <select
               value={reservationType}
-              onChange={(e) => setReservationType(e.target.value as 'RI' | 'SP')}
+              onChange={(e) => setReservationType(e.target.value as 'RI' | 'SP' | 'Mix')}
               className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
+              <option value="Mix">Mix (RI + SP)</option>
               <option value="RI">Reserved Instance (RI)</option>
               <option value="SP">Savings Plans (SP)</option>
             </select>
@@ -245,40 +251,45 @@ export default function ResultsTable({ results }: ResultsTableProps) {
           <tbody className="bg-white divide-y divide-gray-200">
             {results.details.map((detail, index) => {
               const isRI = reservationType === 'RI';
+              const isSP = reservationType === 'SP';
+              const isMix = reservationType === 'Mix';
               const is30d = insuranceType === '30d';
 
-              const discount = isRI ? detail.ri_discount : detail.sp_discount;
-              const commitmentCost = isRI
-                ? detail.ri_commitment_cost
-                : detail.sp_commitment_cost;
-              const appliedRate = isRI
-                ? detail.ri_applied_rate
-                : detail.sp_applied_rate;
-              const costReduction = isRI
-                ? detail.ri_cost_reduction
-                : detail.sp_cost_reduction;
-              const refund = isRI ? detail.ri_refund : detail.sp_refund;
-              const insurance = isRI
-                ? is30d
-                  ? detail.ri_insurance_30d
-                  : detail.ri_insurance_1y
-                : is30d
-                ? detail.sp_insurance_30d
-                : detail.sp_insurance_1y;
-              const finalPayment = isRI
-                ? is30d
-                  ? detail.ri_final_payment_30d
-                  : detail.ri_final_payment_1y
-                : is30d
-                ? detail.sp_final_payment_30d
-                : detail.sp_final_payment_1y;
-              const effectiveRate = isRI
-                ? is30d
-                  ? detail.ri_effective_discount_rate_30d
-                  : detail.ri_effective_discount_rate_1y
-                : is30d
-                ? detail.sp_effective_discount_rate_30d
-                : detail.sp_effective_discount_rate_1y;
+              let discount, commitmentCost, appliedRate, costReduction, refund, insurance, finalPayment, effectiveRate;
+
+              if (isMix) {
+                // Mix: SPがある場合はSP、ない場合はRI
+                const useSP = !!detail.sp_discount;
+                discount = useSP ? detail.sp_discount : detail.ri_discount;
+                commitmentCost = useSP ? detail.sp_commitment_cost : detail.ri_commitment_cost;
+                appliedRate = useSP ? detail.sp_applied_rate : detail.ri_applied_rate;
+                costReduction = useSP ? detail.sp_cost_reduction : detail.ri_cost_reduction;
+                refund = useSP ? detail.sp_refund : detail.ri_refund;
+                insurance = useSP
+                  ? (is30d ? detail.sp_insurance_30d : detail.sp_insurance_1y)
+                  : (is30d ? detail.ri_insurance_30d : detail.ri_insurance_1y);
+                finalPayment = useSP
+                  ? (is30d ? detail.sp_final_payment_30d : detail.sp_final_payment_1y)
+                  : (is30d ? detail.ri_final_payment_30d : detail.ri_final_payment_1y);
+                effectiveRate = useSP
+                  ? (is30d ? detail.sp_effective_discount_rate_30d : detail.sp_effective_discount_rate_1y)
+                  : (is30d ? detail.ri_effective_discount_rate_30d : detail.ri_effective_discount_rate_1y);
+              } else {
+                discount = isRI ? detail.ri_discount : detail.sp_discount;
+                commitmentCost = isRI ? detail.ri_commitment_cost : detail.sp_commitment_cost;
+                appliedRate = isRI ? detail.ri_applied_rate : detail.sp_applied_rate;
+                costReduction = isRI ? detail.ri_cost_reduction : detail.sp_cost_reduction;
+                refund = isRI ? detail.ri_refund : detail.sp_refund;
+                insurance = isRI
+                  ? (is30d ? detail.ri_insurance_30d : detail.ri_insurance_1y)
+                  : (is30d ? detail.sp_insurance_30d : detail.sp_insurance_1y);
+                finalPayment = isRI
+                  ? (is30d ? detail.ri_final_payment_30d : detail.ri_final_payment_1y)
+                  : (is30d ? detail.sp_final_payment_30d : detail.sp_final_payment_1y);
+                effectiveRate = isRI
+                  ? (is30d ? detail.ri_effective_discount_rate_30d : detail.ri_effective_discount_rate_1y)
+                  : (is30d ? detail.sp_effective_discount_rate_30d : detail.sp_effective_discount_rate_1y);
+              }
 
               return (
                 <tr key={index} className="hover:bg-gray-50">
