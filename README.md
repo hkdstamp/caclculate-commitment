@@ -172,14 +172,14 @@ ENABLE_AWS_PRICE_API=true
 PRICE_CACHE_DURATION=86400
 
 # AWS API Rate Limiting (ThrottlingException対策)
-AWS_API_CALL_DELAY=200           # API呼び出し間の遅延（ミリ秒）
+AWS_API_CALL_DELAY=1000          # API呼び出し間の遅延（ミリ秒）
 AWS_API_MAX_RETRIES=5            # ThrottlingException時の最大リトライ回数
-AWS_API_INITIAL_RETRY_DELAY=1000 # リトライ初期遅延（ミリ秒）
+AWS_API_INITIAL_RETRY_DELAY=5000 # リトライ初期遅延（ミリ秒）
 ```
 
 **注意**: 
 - AWS Price List APIを使用しない場合は、`ENABLE_AWS_PRICE_API=false`のまま（デフォルト）にしてください。静的カタログが使用されます。
-- ThrottlingExceptionが頻発する場合は、`AWS_API_CALL_DELAY`を300-500msに増やしてください。
+- ThrottlingExceptionが頻発する場合は、`AWS_API_CALL_DELAY`を1500-2000msに増やしてください。
 
 ### 環境変数の確認方法
 
