@@ -52,6 +52,54 @@ function isDedicatedUsage(lineitemUsageType: string): boolean {
 }
 
 /**
+ * RDS専用のRI割引を検索
+ * - 30日保証（insurance_30d）: 3年契約NoUpfrontを優先
+ * - 1年保証（insurance_1y）: 3年契約PartialUpfrontを優先
+ */
+async function findRDSReservationDiscount(
+  service: string,
+  region: string,
+  instanceType: string,
+  tenancy: 'Shared' | 'Dedicated' | 'Host',
+  insuranceType: '30d' | '1y'
+): Promise<ReservationDiscount | undefined> {
+  const allDiscounts = await findReservationDiscounts(
+    service,
+    region,
+    instanceType,
+    'RI',
+    tenancy
+  );
+
+  if (allDiscounts.length === 0) {
+    return undefined;
+  }
+
+  // 30日保証: 3年契約NoUpfront優先
+  if (insuranceType === '30d') {
+    const threeYearNoUpfront = allDiscounts.find(
+      d => d.contract_years === 3 && d.payment_method === 'NoUpfront'
+    );
+    if (threeYearNoUpfront) {
+      return threeYearNoUpfront;
+    }
+  }
+
+  // 1年保証: 3年契約PartialUpfront優先
+  if (insuranceType === '1y') {
+    const threeYearPartialUpfront = allDiscounts.find(
+      d => d.contract_years === 3 && d.payment_method === 'PartialUpfront'
+    );
+    if (threeYearPartialUpfront) {
+      return threeYearPartialUpfront;
+    }
+  }
+
+  // フォールバック: 通常の優先順位
+  return getBestReservationDiscount(allDiscounts);
+}
+
+/**
  * 単一のコストデータに対してコミットメントコストを計算（非同期版）
  */
 export async function calculateCommitmentCost(
@@ -65,15 +113,39 @@ export async function calculateCommitmentCost(
   const isDedicated = isDedicatedUsage(costData.lineitem_usagetype);
   const tenancy = isDedicated ? 'Dedicated' : 'Shared';
 
-  // RI割引の検索
-  const riDiscounts = await findReservationDiscounts(
-    costData.service,
-    costData.product_region,
-    costData.product_instancetype,
-    'RI',
-    tenancy
-  );
-  const riDiscount = getBestReservationDiscount(riDiscounts);
+  // RDS専用のRI検索（30日保証用と1年保証用で異なる契約条件）
+  let riDiscount30d: ReservationDiscount | undefined;
+  let riDiscount1y: ReservationDiscount | undefined;
+
+  if (isRDSService(costData.service)) {
+    // RDSの場合、保険タイプごとに異なる契約条件で検索
+    riDiscount30d = await findRDSReservationDiscount(
+      costData.service,
+      costData.product_region,
+      costData.product_instancetype,
+      tenancy,
+      '30d'
+    );
+    riDiscount1y = await findRDSReservationDiscount(
+      costData.service,
+      costData.product_region,
+      costData.product_instancetype,
+      tenancy,
+      '1y'
+    );
+  } else {
+    // RDS以外は通常の検索
+    const riDiscounts = await findReservationDiscounts(
+      costData.service,
+      costData.product_region,
+      costData.product_instancetype,
+      'RI',
+      tenancy
+    );
+    const riDiscount = getBestReservationDiscount(riDiscounts);
+    riDiscount30d = riDiscount;
+    riDiscount1y = riDiscount;
+  }
 
   // SP割引の検索（SPはShared/Dedicated区別なし）
   const spDiscounts = await findReservationDiscounts(
@@ -84,10 +156,18 @@ export async function calculateCommitmentCost(
   );
   const spDiscount = getBestReservationDiscount(spDiscounts);
 
-  // RI計算
-  let riCommitmentCost: number;
-  
-  if (riDiscount) {
+  // RI計算用のヘルパー関数
+  const calculateRICommitment = (discount: ReservationDiscount | undefined) => {
+    if (!discount) {
+      return {
+        commitmentCost: ondemandCost,
+        upfrontFee: 0,
+      };
+    }
+
+    let commitmentCost: number;
+    let upfrontFee: number = 0;
+
     // RDSの場合、MultiAZとNode数を考慮
     if (isRDSService(costData.service)) {
       const isMultiAZ = isRDSMultiAZ(costData.lineitem_usagetype);
@@ -98,56 +178,85 @@ export async function calculateCommitmentCost(
       );
       
       // RDS RI単価をNode数で調整
-      let adjustedUnitPrice = riDiscount.unit_price * nodeCount;
+      let adjustedUnitPrice = discount.unit_price * nodeCount;
       
       // MultiAZの場合、さらに2倍（プライマリ + スタンバイ）
       if (isMultiAZ) {
         adjustedUnitPrice *= 2;
       }
       
-      riCommitmentCost = usageAmount * adjustedUnitPrice;
+      commitmentCost = usageAmount * adjustedUnitPrice;
+
+      // 初期費用の計算（PartialUpfront/AllUpfrontの場合）
+      if (discount.upfront_fee && discount.upfront_fee > 0) {
+        upfrontFee = discount.upfront_fee * nodeCount;
+        if (isMultiAZ) {
+          upfrontFee *= 2;
+        }
+      }
       
       // デバッグログ（開発時のみ）
       if (process.env.NODE_ENV === 'development') {
         console.log('🔍 RDS RI Calculation:', {
           resourceId: costData.lineitem_resourceid,
           instanceType: costData.product_instancetype,
+          paymentMethod: discount.payment_method,
+          contractYears: discount.contract_years,
           isMultiAZ,
           nodeCount,
-          baseUnitPrice: riDiscount.unit_price,
+          baseUnitPrice: discount.unit_price,
+          baseUpfrontFee: discount.upfront_fee || 0,
           adjustedUnitPrice,
+          adjustedUpfrontFee: upfrontFee,
           usageAmount,
-          riCommitmentCost,
+          commitmentCost,
         });
       }
     } else {
       // EC2など、通常の計算
-      riCommitmentCost = usageAmount * riDiscount.unit_price;
+      commitmentCost = usageAmount * discount.unit_price;
+      upfrontFee = discount.upfront_fee || 0;
     }
-  } else {
-    riCommitmentCost = ondemandCost;
-  }
 
+    return { commitmentCost, upfrontFee };
+  };
+
+  // 30日保証用のRI計算
+  const ri30dResult = calculateRICommitment(riDiscount30d);
+  const riCommitmentCost30d = ri30dResult.commitmentCost;
+  const riUpfrontFee30d = ri30dResult.upfrontFee;
+
+  // 1年保証用のRI計算
+  const ri1yResult = calculateRICommitment(riDiscount1y);
+  const riCommitmentCost1y = ri1yResult.commitmentCost;
+  const riUpfrontFee1y = ri1yResult.upfrontFee;
+
+  // 初期費用を契約年数に応じた月数で割った額を月額コストに加算
+  const contractMonths30d = riDiscount30d ? riDiscount30d.contract_years * 12 : 12;
+  const contractMonths1y = riDiscount1y ? riDiscount1y.contract_years * 12 : 12;
+  const monthlyUpfrontCost30d = riUpfrontFee30d / contractMonths30d;
+  const monthlyUpfrontCost1y = riUpfrontFee1y / contractMonths1y;
+
+  // 適用オンデマンドコスト
   const riAppliedOndemand = ondemandCost * params.ri_applied_rate;
-  const riCostReduction = Math.max(0, riAppliedOndemand - riCommitmentCost);
-  // オンデマンドコストとコミットメントコストが同額の場合、返金は0
-  const riRefund = riCommitmentCost === ondemandCost ? 0 : Math.max(0, riCommitmentCost - riAppliedOndemand);
 
-  // 保険料 = コスト削減額 × 保険料率（コスト削減額が0以下の場合は保険料も0）
-  const riInsurance30d = riCostReduction > 0 ? riCostReduction * params.insurance_rate_30d : 0;
-  const riInsurance1y = riCostReduction > 0 ? riCostReduction * params.insurance_rate_1y : 0;
+  // 30日保証の計算
+  const riCostReduction30d = Math.max(0, riAppliedOndemand - riCommitmentCost30d);
+  const riRefund30d = riCommitmentCost30d === ondemandCost ? 0 : Math.max(0, riCommitmentCost30d - riAppliedOndemand);
+  const riInsurance30d = riCostReduction30d > 0 ? riCostReduction30d * params.insurance_rate_30d : 0;
+  const riFinalPayment30d = riCommitmentCost30d + riInsurance30d + monthlyUpfrontCost30d;
+  const riEffectiveDiscountRate30d = ondemandCost > 0
+    ? ((ondemandCost - riFinalPayment30d) / ondemandCost) * 100
+    : 0;
 
-  const riFinalPayment30d = riCommitmentCost + riInsurance30d;
-  const riFinalPayment1y = riCommitmentCost + riInsurance1y;
-
-  const riEffectiveDiscountRate30d =
-    ondemandCost > 0
-      ? ((ondemandCost - riFinalPayment30d) / ondemandCost) * 100
-      : 0;
-  const riEffectiveDiscountRate1y =
-    ondemandCost > 0
-      ? ((ondemandCost - riFinalPayment1y) / ondemandCost) * 100
-      : 0;
+  // 1年保証の計算
+  const riCostReduction1y = Math.max(0, riAppliedOndemand - riCommitmentCost1y);
+  const riRefund1y = riCommitmentCost1y === ondemandCost ? 0 : Math.max(0, riCommitmentCost1y - riAppliedOndemand);
+  const riInsurance1y = riCostReduction1y > 0 ? riCostReduction1y * params.insurance_rate_1y : 0;
+  const riFinalPayment1y = riCommitmentCost1y + riInsurance1y + monthlyUpfrontCost1y;
+  const riEffectiveDiscountRate1y = ondemandCost > 0
+    ? ((ondemandCost - riFinalPayment1y) / ondemandCost) * 100
+    : 0;
 
   // SP計算
   // SPの場合、unit_priceは割引率（支払い率）を表す
@@ -179,12 +288,13 @@ export async function calculateCommitmentCost(
 
   return {
     costData,
-    // RI
-    ri_discount: riDiscount,
-    ri_commitment_cost: riCommitmentCost,
+    // RI（30日保証と1年保証で異なる契約を使用）
+    ri_discount: riDiscount30d, // 表示用には30日保証のdiscountを使用
+    ri_commitment_cost: riCommitmentCost30d, // 表示用には30日保証を使用
+    ri_upfront_fee: riUpfrontFee30d, // 30日保証の初期費用
     ri_applied_rate: params.ri_applied_rate,
-    ri_cost_reduction: riCostReduction,
-    ri_refund: riRefund,
+    ri_cost_reduction: riCostReduction30d,
+    ri_refund: riRefund30d,
     ri_insurance_30d: riInsurance30d,
     ri_insurance_1y: riInsurance1y,
     ri_final_payment_30d: riFinalPayment30d,
@@ -194,6 +304,7 @@ export async function calculateCommitmentCost(
     // SP
     sp_discount: spDiscount,
     sp_commitment_cost: spCommitmentCost,
+    sp_upfront_fee: 0, // SPには初期費用なし
     sp_applied_rate: params.sp_applied_rate,
     sp_cost_reduction: spCostReduction,
     sp_refund: spRefund,
@@ -236,6 +347,10 @@ export async function aggregateResults(
     (sum, d) => sum + d.ri_commitment_cost,
     0
   );
+  const riTotalUpfrontFee = details.reduce(
+    (sum, d) => sum + d.ri_upfront_fee,
+    0
+  );
   const riTotalCostReduction = details.reduce(
     (sum, d) => sum + d.ri_cost_reduction,
     0
@@ -270,6 +385,10 @@ export async function aggregateResults(
   // SP集計
   const spTotalCommitmentCost = details.reduce(
     (sum, d) => sum + d.sp_commitment_cost,
+    0
+  );
+  const spTotalUpfrontFee = details.reduce(
+    (sum, d) => sum + d.sp_upfront_fee,
     0
   );
   const spTotalCostReduction = details.reduce(
@@ -307,6 +426,10 @@ export async function aggregateResults(
   const mixTotalCommitmentCost = details.reduce((sum, d) => {
     // SPディスカウントがある場合はSP、ない場合はRI
     return sum + (d.sp_discount ? d.sp_commitment_cost : d.ri_commitment_cost);
+  }, 0);
+  
+  const mixTotalUpfrontFee = details.reduce((sum, d) => {
+    return sum + (d.sp_discount ? d.sp_upfront_fee : d.ri_upfront_fee);
   }, 0);
   
   const mixTotalCostReduction = details.reduce((sum, d) => {
@@ -347,6 +470,7 @@ export async function aggregateResults(
     total_current_cost: totalCurrentCost,
     // RI
     ri_total_commitment_cost: riTotalCommitmentCost,
+    ri_total_upfront_fee: riTotalUpfrontFee,
     ri_total_cost_reduction: riTotalCostReduction,
     ri_total_refund: riTotalRefund,
     ri_total_insurance_30d: riTotalInsurance30d,
@@ -357,6 +481,7 @@ export async function aggregateResults(
     ri_average_effective_discount_rate_1y: riAverageEffectiveDiscountRate1y,
     // SP
     sp_total_commitment_cost: spTotalCommitmentCost,
+    sp_total_upfront_fee: spTotalUpfrontFee,
     sp_total_cost_reduction: spTotalCostReduction,
     sp_total_refund: spTotalRefund,
     sp_total_insurance_30d: spTotalInsurance30d,
@@ -367,6 +492,7 @@ export async function aggregateResults(
     sp_average_effective_discount_rate_1y: spAverageEffectiveDiscountRate1y,
     // Mix
     mix_total_commitment_cost: mixTotalCommitmentCost,
+    mix_total_upfront_fee: mixTotalUpfrontFee,
     mix_total_cost_reduction: mixTotalCostReduction,
     mix_total_refund: mixTotalRefund,
     mix_total_insurance_30d: mixTotalInsurance30d,

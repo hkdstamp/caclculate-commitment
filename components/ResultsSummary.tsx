@@ -84,6 +84,13 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
             </div>
 
             <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-700">初期費用（別途）</span>
+              <span className="font-semibold text-orange-600">
+                {formatCurrency(results.mix_total_upfront_fee)}
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center">
               <span className="text-sm text-gray-700">コスト削減額</span>
               <span className="font-semibold text-green-600">
                 -{formatCurrency(results.mix_total_cost_reduction)}
@@ -165,6 +172,13 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
             </div>
 
             <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-700">初期費用（別途）</span>
+              <span className="font-semibold text-orange-600">
+                {formatCurrency(results.ri_total_upfront_fee)}
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center">
               <span className="text-sm text-gray-700">コスト削減額</span>
               <span className="font-semibold text-green-600">
                 -{formatCurrency(results.ri_total_cost_reduction)}
@@ -242,6 +256,13 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
               <span className="text-sm text-gray-700">コミットメントコスト</span>
               <span className="font-semibold text-gray-900">
                 {formatCurrency(results.sp_total_commitment_cost)}
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-700">初期費用（別途）</span>
+              <span className="font-semibold text-orange-600">
+                {formatCurrency(results.sp_total_upfront_fee)}
               </span>
             </div>
 

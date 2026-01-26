@@ -25,6 +25,7 @@ export interface ReservationDiscount {
   unit_price_unit: string; // 'per hour' など
   reservation_type: 'RI' | 'SP'; // Reserved Instance or Savings Plan
   tenancy?: 'Shared' | 'Dedicated' | 'Host'; // テナンシータイプ（オプション）
+  upfront_fee?: number; // 初期費用（PartialUpfront/AllUpfrontの場合）
 }
 
 // コミットメントコスト計算結果
@@ -35,6 +36,7 @@ export interface CommitmentCostResult {
   // RI計算結果
   ri_discount?: ReservationDiscount;
   ri_commitment_cost: number;
+  ri_upfront_fee: number; // RI初期費用
   ri_applied_rate: number; // 適用率 0-1
   ri_cost_reduction: number;
   ri_refund: number;
@@ -48,6 +50,7 @@ export interface CommitmentCostResult {
   // SP計算結果
   sp_discount?: ReservationDiscount;
   sp_commitment_cost: number;
+  sp_upfront_fee: number; // SP初期費用
   sp_applied_rate: number;
   sp_cost_reduction: number;
   sp_refund: number;
@@ -75,6 +78,7 @@ export interface AggregatedResult {
   
   // RI集計
   ri_total_commitment_cost: number;
+  ri_total_upfront_fee: number; // RI初期費用の総計
   ri_total_cost_reduction: number;
   ri_total_refund: number;
   ri_total_insurance_30d: number;
@@ -86,6 +90,7 @@ export interface AggregatedResult {
   
   // SP集計
   sp_total_commitment_cost: number;
+  sp_total_upfront_fee: number; // SP初期費用の総計
   sp_total_cost_reduction: number;
   sp_total_refund: number;
   sp_total_insurance_30d: number;
@@ -97,6 +102,7 @@ export interface AggregatedResult {
   
   // Mix集計（SPがある場合はSP、ない場合はRI）
   mix_total_commitment_cost: number;
+  mix_total_upfront_fee: number; // Mix初期費用の総計
   mix_total_cost_reduction: number;
   mix_total_refund: number;
   mix_total_insurance_30d: number;
