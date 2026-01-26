@@ -36,6 +36,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
       'リソースID',
       'リージョン',
       'インスタンスタイプ',
+      ...(isMix ? ['種別'] : []), // Mixの場合のみ種別列を追加
       '契約年数',
       '支払方法',
       '単価',
@@ -93,6 +94,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
         detail.costData.lineitem_resourceid || '-',
         detail.costData.product_region,
         detail.costData.product_instancetype || '-',
+        ...(isMix ? [detail.sp_discount ? 'SP' : 'RI'] : []), // Mixの場合のみ種別を追加
         discount ? `${discount.contract_years}年` : '-',
         discount ? discount.payment_method : '-',
         discount ? discount.unit_price.toFixed(4) : '-',
@@ -210,6 +212,11 @@ export default function ResultsTable({ results }: ResultsTableProps) {
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 インスタンスタイプ
               </th>
+              {reservationType === 'Mix' && (
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  種別
+                </th>
+              )}
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 契約年数
               </th>
@@ -305,6 +312,19 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                   <td className="px-4 py-3 whitespace-nowrap text-gray-700">
                     {detail.costData.product_instancetype || '-'}
                   </td>
+                  {isMix && (
+                    <td className="px-4 py-3 whitespace-nowrap text-center">
+                      {detail.sp_discount ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary-100 text-secondary-800">
+                          💎 SP
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                          🔹 RI
+                        </span>
+                      )}
+                    </td>
+                  )}
                   <td className="px-4 py-3 whitespace-nowrap text-right text-gray-700">
                     {discount ? `${discount.contract_years}年` : '-'}
                   </td>
