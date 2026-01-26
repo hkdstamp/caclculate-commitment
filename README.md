@@ -43,6 +43,81 @@ account_id,service,lineitem_resourceid,product_instancetype,lineitem_operation,l
 
 サンプルCSVファイル: [`public/sample-data.csv`](/public/sample-data.csv)
 
+#### BigQueryでCSVデータを生成する（サンプルクエリ）
+
+AWS Cost and Usage Reportデータから、このツールに必要なCSVを生成するBigQueryクエリのサンプル：
+
+```sql
+-- 予約可能サービスの抽出
+SELECT
+  -- bill_billing_period_start_date as billing_month,
+  lineitem_usageaccountid AS account_id,
+  lineitem_productcode AS service,
+  lineitem_resourceid,
+  product_instancetype,
+  lineitem_operation,
+  lineitem_usagetype,
+  product_region,
+  lineitem_lineitemtype,
+  pricing_publicondemandrate,
+  lineitem_unblendedrate,
+  -- 利用量
+  SUM(lineitem_unblendedcost) AS uc,
+  SUM(CAST(pricing_publicondemandrate AS FLOAT64) * lineitem_usageamount) AS ondemand_risk_cost,
+  SUM(lineitem_usageamount) AS usage_amount
+FROM 
+  `mobingi-main.mspid.202512_accountid`
+WHERE 
+  lineitem_usageaccountid = '325215378246'
+  -- RI/割引の対象となるサービス
+  AND (
+    -- EC2
+    (lineitem_productcode = 'AmazonEC2' 
+     AND lineitem_operation LIKE 'RunInstances%' 
+     AND lineitem_usagetype LIKE '%Usage%')
+    -- RDS
+    OR (lineitem_productcode = 'AmazonRDS' 
+        AND lineitem_operation LIKE 'CreateDBInstance%' 
+        AND lineitem_usagetype LIKE '%InstanceUsage%')
+    -- Redshift
+    OR (lineitem_productcode = 'AmazonRedshift' 
+        AND lineitem_operation LIKE 'RunComputeNode%')
+    -- ElastiCache
+    OR (lineitem_productcode = 'AmazonElastiCache' 
+        AND lineitem_operation LIKE 'CreateCacheCluster%' 
+        AND lineitem_usagetype LIKE '%NodeUsage%')
+    -- OpenSearch
+    OR (lineitem_productcode = 'AmazonOpenSearchService' 
+        AND lineitem_operation LIKE 'RunInstance%')
+    -- Fargate (ECS/EKS)
+    OR (lineitem_productcode = 'AWSFargate' 
+        AND lineitem_operation LIKE '%:Fargate%')
+    -- Lambda
+    OR (lineitem_productcode = 'AWSLambda' 
+        AND lineitem_operation = 'Invoke')
+  )
+  -- Usage/DiscountedUsage/SavingsPlanCoveredUsageのみ
+  AND lineitem_lineitemtype IN ('Usage', 'DiscountedUsage', 'SavingsPlanCoveredUsage')
+  -- 0円除外（オプション）
+  -- AND lineitem_unblendedcost > 0
+GROUP BY 
+  1,2,3,4,5,6,7,8,9,10
+ORDER BY 
+  lineitem_resourceid, product_instancetype
+```
+
+**クエリのポイント:**
+- `lineitem_usageaccountid`: 対象アカウントIDでフィルタ
+- 予約可能な7つのサービスをカバー（EC2, RDS, Redshift, ElastiCache, OpenSearch, Fargate, Lambda）
+- `lineitem_lineitemtype`で Usage/DiscountedUsage/SavingsPlanCoveredUsage のみ抽出
+- `ondemand_risk_cost`: オンデマンド単価×利用量で計算したリスクコスト
+- リソースID、インスタンスタイプでソート
+
+**注意事項:**
+- テーブル名 `mobingi-main.mspid.202512_accountid` は環境に応じて変更してください
+- `billing_month` が必要な場合はコメントを外してください
+- 0円のレコードを除外する場合は `AND lineitem_unblendedcost > 0` のコメントを外してください
+
 ### 2. 適用率の設定
 
 - **RI適用率**: Reserved Instanceをどの程度適用するか（0%～100%）
