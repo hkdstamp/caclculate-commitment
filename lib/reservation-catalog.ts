@@ -819,6 +819,7 @@ export const reservationCatalog: ReservationDiscount[] = [
     unit_price: 0.261,
     unit_price_unit: 'per hour',
     reservation_type: 'RI',
+    upfront_fee: 6840, // 3年分の約40%の初期費用
   },
   {
     service: 'Amazon Relational Database Service',
@@ -829,6 +830,7 @@ export const reservationCatalog: ReservationDiscount[] = [
     unit_price: 0.248,
     unit_price_unit: 'per hour',
     reservation_type: 'RI',
+    upfront_fee: 6512, // 3年分の全額初期費用
   },
 
   // db.r5.2xlarge
@@ -881,6 +883,7 @@ export const reservationCatalog: ReservationDiscount[] = [
     unit_price: 0.521,
     unit_price_unit: 'per hour',
     reservation_type: 'RI',
+    upfront_fee: 13680, // 3年分の約40%の初期費用
   },
   {
     service: 'Amazon Relational Database Service',
@@ -891,6 +894,7 @@ export const reservationCatalog: ReservationDiscount[] = [
     unit_price: 0.496,
     unit_price_unit: 'per hour',
     reservation_type: 'RI',
+    upfront_fee: 13024, // 3年分の全額初期費用
   },
 
   // db.r5.4xlarge
@@ -943,6 +947,7 @@ export const reservationCatalog: ReservationDiscount[] = [
     unit_price: 1.042,
     unit_price_unit: 'per hour',
     reservation_type: 'RI',
+    upfront_fee: 27360, // 3年分の約40%の初期費用
   },
   {
     service: 'Amazon Relational Database Service',
@@ -953,6 +958,7 @@ export const reservationCatalog: ReservationDiscount[] = [
     unit_price: 0.992,
     unit_price_unit: 'per hour',
     reservation_type: 'RI',
+    upfront_fee: 26048, // 3年分の全額初期費用
   },
 
   // ElastiCache RI - Tokyo Region

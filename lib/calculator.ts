@@ -71,6 +71,21 @@ async function findRDSReservationDiscount(
     tenancy
   );
 
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`🔍 findRDSReservationDiscount: ${insuranceType}`, {
+      service,
+      region,
+      instanceType,
+      tenancy,
+      totalDiscounts: allDiscounts.length,
+      discounts: allDiscounts.map(d => ({
+        contract_years: d.contract_years,
+        payment_method: d.payment_method,
+        unit_price: d.unit_price
+      }))
+    });
+  }
+
   if (allDiscounts.length === 0) {
     return undefined;
   }
@@ -81,6 +96,9 @@ async function findRDSReservationDiscount(
       d => d.contract_years === 3 && d.payment_method === 'NoUpfront'
     );
     if (threeYearNoUpfront) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ Found 3-year NoUpfront for 30d:`, threeYearNoUpfront);
+      }
       return threeYearNoUpfront;
     }
   }
@@ -91,12 +109,19 @@ async function findRDSReservationDiscount(
       d => d.contract_years === 3 && d.payment_method === 'PartialUpfront'
     );
     if (threeYearPartialUpfront) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ Found 3-year PartialUpfront for 1y:`, threeYearPartialUpfront);
+      }
       return threeYearPartialUpfront;
     }
   }
 
   // フォールバック: 通常の優先順位
-  return getBestReservationDiscount(allDiscounts);
+  const fallback = getBestReservationDiscount(allDiscounts);
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`⚠️ Using fallback for ${insuranceType}:`, fallback);
+  }
+  return fallback;
 }
 
 /**
@@ -285,6 +310,36 @@ export async function calculateCommitmentCost(
     ondemandCost > 0
       ? ((ondemandCost - spFinalPayment1y) / ondemandCost) * 100
       : 0;
+
+  // デバッグログ（開発時のみ）
+  if (process.env.NODE_ENV === 'development' && isRDSService(costData.service)) {
+    console.log('🔍 RDS Final Calculation:', {
+      resourceId: costData.lineitem_resourceid,
+      instanceType: costData.product_instancetype,
+      '30d': {
+        discount: riDiscount30d ? {
+          contract: `${riDiscount30d.contract_years}年 ${riDiscount30d.payment_method}`,
+          unit_price: riDiscount30d.unit_price,
+          upfront_fee: riDiscount30d.upfront_fee || 0,
+        } : 'なし',
+        commitment_cost: riCommitmentCost30d,
+        upfront_fee: riUpfrontFee30d,
+        final_payment: riFinalPayment30d,
+        effective_rate: riEffectiveDiscountRate30d.toFixed(2) + '%'
+      },
+      '1y': {
+        discount: riDiscount1y ? {
+          contract: `${riDiscount1y.contract_years}年 ${riDiscount1y.payment_method}`,
+          unit_price: riDiscount1y.unit_price,
+          upfront_fee: riDiscount1y.upfront_fee || 0,
+        } : 'なし',
+        commitment_cost: riCommitmentCost1y,
+        upfront_fee: riUpfrontFee1y,
+        final_payment: riFinalPayment1y,
+        effective_rate: riEffectiveDiscountRate1y.toFixed(2) + '%'
+      }
+    });
+  }
 
   return {
     costData,
