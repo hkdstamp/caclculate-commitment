@@ -24,6 +24,7 @@ export interface ReservationDiscount {
   unit_price: number;
   unit_price_unit: string; // 'per hour' など
   reservation_type: 'RI' | 'SP'; // Reserved Instance or Savings Plan
+  tenancy?: 'Shared' | 'Dedicated' | 'Host'; // テナンシータイプ（オプション）
 }
 
 // コミットメントコスト計算結果

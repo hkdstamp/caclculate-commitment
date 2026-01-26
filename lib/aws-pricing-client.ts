@@ -130,10 +130,12 @@ const INITIAL_RETRY_DELAY = parseInt(process.env.AWS_API_INITIAL_RETRY_DELAY || 
 
 /**
  * AWS Price List APIからEC2のRI価格を取得
+ * tenancyパラメータでShared/Dedicated/Hostを指定可能
  */
 async function fetchEC2RIPricing(
   instanceType: string,
-  region: string
+  region: string,
+  tenancy: 'Shared' | 'Dedicated' | 'Host' = 'Shared'
 ): Promise<ReservationDiscount[]> {
   const client = getPricingClient();
   if (!client) return [];
@@ -160,7 +162,7 @@ async function fetchEC2RIPricing(
           {
             Type: 'TERM_MATCH',
             Field: 'tenancy',
-            Value: 'Shared',
+            Value: tenancy,
           },
           {
             Type: 'TERM_MATCH',
@@ -214,6 +216,7 @@ async function fetchEC2RIPricing(
                       unit_price: pricePerUnit,
                       unit_price_unit: 'per hour',
                       reservation_type: 'RI',
+                      tenancy,
                     });
                   }
                 }
@@ -398,7 +401,8 @@ export async function fetchPricingFromAWS(
   service: string,
   instanceType: string | undefined,
   region: string,
-  reservationType: 'RI' | 'SP'
+  reservationType: 'RI' | 'SP',
+  tenancy: 'Shared' | 'Dedicated' | 'Host' = 'Shared'
 ): Promise<ReservationDiscount[]> {
   const serviceCode = getServiceCode(service);
 
@@ -415,7 +419,7 @@ export async function fetchPricingFromAWS(
   if (!instanceType) return [];
 
   if (serviceCode === 'AmazonEC2') {
-    return await fetchEC2RIPricing(instanceType, region);
+    return await fetchEC2RIPricing(instanceType, region, tenancy);
   } else if (serviceCode === 'AmazonRDS') {
     return await fetchRDSRIPricing(instanceType, region);
   }
@@ -430,7 +434,9 @@ export function generateCacheKey(
   service: string,
   instanceType: string | undefined,
   region: string,
-  reservationType: 'RI' | 'SP'
+  reservationType: 'RI' | 'SP',
+  tenancy?: 'Shared' | 'Dedicated' | 'Host'
 ): string {
-  return `${service}:${instanceType || 'SP'}:${region}:${reservationType}`;
+  const tenancyStr = tenancy ? `:${tenancy}` : '';
+  return `${service}:${instanceType || 'SP'}:${region}:${reservationType}${tenancyStr}`;
 }

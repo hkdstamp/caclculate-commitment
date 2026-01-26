@@ -80,6 +80,12 @@ account_id,service,lineitem_resourceid,product_instancetype,lineitem_operation,l
    - 1年NoUpfrontも見つからない → 通常の優先順位（3年PartialUpfront等）を適用
    - フォールバック時は開発モードでログ出力: `⚠️ Fallback: 3-year NoUpfront not found, using 1-year NoUpfront`
 
+5. **DedicatedUsageの考慮**:
+   - `lineitem_usagetype` に "Dedicated" が含まれている場合、Dedicated Host/Tenancy の価格を取得
+   - Dedicated の RI 単価は Shared よりも高額
+   - AWS Price List API で Tenancy=Dedicated でフィルタリング
+   - 例: `DedicatedUsage:m5.large` → Dedicated Host の RI 価格を検索
+
 #### RDSの特別な計算ルール
 
 RDS（Amazon Relational Database Service）の場合、以下の要素を考慮します：

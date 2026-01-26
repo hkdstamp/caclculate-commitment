@@ -1035,7 +1035,8 @@ export async function findReservationDiscounts(
   service: string,
   region: string,
   instanceType?: string,
-  reservationType?: 'RI' | 'SP'
+  reservationType?: 'RI' | 'SP',
+  tenancy?: 'Shared' | 'Dedicated' | 'Host'
 ): Promise<ReservationDiscount[]> {
   // 静的カタログから検索
   const catalogResults = findReservationDiscountsFromCatalog(
@@ -1056,7 +1057,7 @@ export async function findReservationDiscounts(
       const { fetchPricingFromAWS, generateCacheKey } = await import('./aws-pricing-client');
       const { pricingCache } = await import('./pricing-cache');
       
-      const cacheKey = generateCacheKey(service, instanceType, region, reservationType);
+      const cacheKey = generateCacheKey(service, instanceType, region, reservationType, tenancy);
       
       // キャッシュをチェック
       const cachedData = pricingCache.get(cacheKey);
@@ -1067,7 +1068,7 @@ export async function findReservationDiscounts(
 
       // AWS APIから取得
       console.log(`Fetching ${reservationType} pricing from AWS API for`, cacheKey);
-      const apiResults = await fetchPricingFromAWS(service, instanceType, region, reservationType);
+      const apiResults = await fetchPricingFromAWS(service, instanceType, region, reservationType, tenancy);
       
       if (apiResults.length > 0) {
         // キャッシュに保存

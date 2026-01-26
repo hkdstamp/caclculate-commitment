@@ -44,6 +44,14 @@ function isRDSService(service: string): boolean {
 }
 
 /**
+ * Dedicated Host/Tenancyの判定
+ * lineitem_usagetypeに"Dedicated"が含まれている場合、Dedicatedと判定
+ */
+function isDedicatedUsage(lineitemUsageType: string): boolean {
+  return lineitemUsageType.toLowerCase().includes('dedicated');
+}
+
+/**
  * 単一のコストデータに対してコミットメントコストを計算（非同期版）
  */
 export async function calculateCommitmentCost(
@@ -53,16 +61,21 @@ export async function calculateCommitmentCost(
   const ondemandCost = costData.ondemand_risk_cost;
   const usageAmount = costData.usage_amount;
 
+  // Dedicated判定
+  const isDedicated = isDedicatedUsage(costData.lineitem_usagetype);
+  const tenancy = isDedicated ? 'Dedicated' : 'Shared';
+
   // RI割引の検索
   const riDiscounts = await findReservationDiscounts(
     costData.service,
     costData.product_region,
     costData.product_instancetype,
-    'RI'
+    'RI',
+    tenancy
   );
   const riDiscount = getBestReservationDiscount(riDiscounts);
 
-  // SP割引の検索
+  // SP割引の検索（SPはShared/Dedicated区別なし）
   const spDiscounts = await findReservationDiscounts(
     costData.service,
     costData.product_region,

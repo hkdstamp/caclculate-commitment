@@ -8,3 +8,5 @@ account_id,service,lineitem_resourceid,product_instancetype,lineitem_operation,l
 123456789012,Amazon ElastiCache,cache-abc123def456,cache.t3.medium,CreateCacheCluster,ElastiCache:cache.t3.medium,ap-northeast-1,Usage,0.0658,0.0658,48.00,730
 123456789012,Amazon Elastic Compute Cloud,i-0123456789abcdef3,t3.medium,RunInstances,BoxUsage:t3.medium,ap-northeast-1,SavingsPlanCoveredUsage,0.0460,0.0276,33.60,730
 123456789012,Amazon Elastic Compute Cloud,i-0123456789abcdef4,m5.xlarge,RunInstances,BoxUsage:m5.xlarge,ap-northeast-1,SavingsPlanCoveredUsage,0.1920,0.1152,140.16,730
+123456789012,Amazon Elastic Compute Cloud,i-dedicated001,m5.large,RunInstances,DedicatedUsage:m5.large,ap-northeast-1,Usage,0.1840,0.1840,134.32,730
+123456789012,Amazon Elastic Compute Cloud,i-dedicated002,c5.xlarge,RunInstances,DedicatedUsage:c5.xlarge,ap-northeast-1,Usage,0.2380,0.2380,173.74,730
