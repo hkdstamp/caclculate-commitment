@@ -56,6 +56,12 @@ account_id,service,lineitem_resourceid,product_instancetype,lineitem_operation,l
 - **詳細テーブル**: 各リソースごとの詳細な計算結果
 - **保険プラン別**: 30日保証（50%）と1年保証（30%）の比較
 
+### 4. コスト計算の詳細
+
+- **総オンデマンドコスト**: 全てオンデマンドで利用した場合の理論上のコスト（`ondemand_risk_cost` の合計）
+- **現在の総コスト**: 実際の請求額（`lineitem_unblendedrate × usage_amount` の合計）
+  - **注意**: `SavingsPlanCoveredUsage` の行は除外されます（既にSP割引が適用されている利用分のため）
+
 ## 🧮 計算ロジック
 
 ### コミットメントコストの算出
