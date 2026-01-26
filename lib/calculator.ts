@@ -209,6 +209,12 @@ export async function aggregateResults(
     0
   );
 
+  // 現在の総コスト（lineitem_unblendedrate × usage_amount）
+  const totalCurrentCost = details.reduce(
+    (sum, d) => sum + (d.costData.lineitem_unblendedrate * d.costData.usage_amount),
+    0
+  );
+
   // RI集計
   const riTotalCommitmentCost = details.reduce(
     (sum, d) => sum + d.ri_commitment_cost,
@@ -283,6 +289,7 @@ export async function aggregateResults(
 
   return {
     total_ondemand_cost: totalOndemandCost,
+    total_current_cost: totalCurrentCost,
     // RI
     ri_total_commitment_cost: riTotalCommitmentCost,
     ri_total_cost_reduction: riTotalCostReduction,

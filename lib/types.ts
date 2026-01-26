@@ -69,6 +69,7 @@ export interface CalculationParams {
 // 集計結果
 export interface AggregatedResult {
   total_ondemand_cost: number;
+  total_current_cost: number; // 現在の総コスト（lineitem_unblendedrate × usage_amount）
   
   // RI集計
   ri_total_commitment_cost: number;

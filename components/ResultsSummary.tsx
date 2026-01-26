@@ -26,14 +26,31 @@ export default function ResultsSummary({ results }: ResultsSummaryProps) {
         📈 コスト最適化サマリー
       </h2>
 
-      {/* オンデマンドコスト */}
-      <div className="mb-6 p-4 bg-gray-50 border-2 border-gray-300 rounded-lg">
-        <h3 className="text-sm font-semibold text-gray-600 mb-1">
-          総オンデマンドコスト
-        </h3>
-        <p className="text-3xl font-bold text-gray-900">
-          {formatCurrency(results.total_ondemand_cost)}
-        </p>
+      {/* オンデマンドコストと現在のコスト */}
+      <div className="mb-6 grid md:grid-cols-2 gap-4">
+        <div className="p-4 bg-gray-50 border-2 border-gray-300 rounded-lg">
+          <h3 className="text-sm font-semibold text-gray-600 mb-1">
+            総オンデマンドコスト
+          </h3>
+          <p className="text-2xl font-bold text-gray-900">
+            {formatCurrency(results.total_ondemand_cost)}
+          </p>
+          <p className="text-xs text-gray-500 mt-1">
+            リスクコストベース
+          </p>
+        </div>
+        
+        <div className="p-4 bg-blue-50 border-2 border-blue-300 rounded-lg">
+          <h3 className="text-sm font-semibold text-blue-700 mb-1">
+            現在の総コスト
+          </h3>
+          <p className="text-2xl font-bold text-blue-900">
+            {formatCurrency(results.total_current_cost)}
+          </p>
+          <p className="text-xs text-blue-600 mt-1">
+            混合単価 × 利用量
+          </p>
+        </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
