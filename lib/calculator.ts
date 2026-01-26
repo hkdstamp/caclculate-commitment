@@ -303,6 +303,45 @@ export async function aggregateResults(
       ? ((totalOndemandCost - spTotalFinalPayment1y) / totalOndemandCost) * 100
       : 0;
 
+  // Mix集計（SPがある場合はSP、ない場合はRI）
+  const mixTotalCommitmentCost = details.reduce((sum, d) => {
+    // SPディスカウントがある場合はSP、ない場合はRI
+    return sum + (d.sp_discount ? d.sp_commitment_cost : d.ri_commitment_cost);
+  }, 0);
+  
+  const mixTotalCostReduction = details.reduce((sum, d) => {
+    return sum + (d.sp_discount ? d.sp_cost_reduction : d.ri_cost_reduction);
+  }, 0);
+  
+  const mixTotalRefund = details.reduce((sum, d) => {
+    return sum + (d.sp_discount ? d.sp_refund : d.ri_refund);
+  }, 0);
+  
+  const mixTotalInsurance30d = details.reduce((sum, d) => {
+    return sum + (d.sp_discount ? d.sp_insurance_30d : d.ri_insurance_30d);
+  }, 0);
+  
+  const mixTotalInsurance1y = details.reduce((sum, d) => {
+    return sum + (d.sp_discount ? d.sp_insurance_1y : d.ri_insurance_1y);
+  }, 0);
+  
+  const mixTotalFinalPayment30d = details.reduce((sum, d) => {
+    return sum + (d.sp_discount ? d.sp_final_payment_30d : d.ri_final_payment_30d);
+  }, 0);
+  
+  const mixTotalFinalPayment1y = details.reduce((sum, d) => {
+    return sum + (d.sp_discount ? d.sp_final_payment_1y : d.ri_final_payment_1y);
+  }, 0);
+
+  const mixAverageEffectiveDiscountRate30d =
+    totalOndemandCost > 0
+      ? ((totalOndemandCost - mixTotalFinalPayment30d) / totalOndemandCost) * 100
+      : 0;
+  const mixAverageEffectiveDiscountRate1y =
+    totalOndemandCost > 0
+      ? ((totalOndemandCost - mixTotalFinalPayment1y) / totalOndemandCost) * 100
+      : 0;
+
   return {
     total_ondemand_cost: totalOndemandCost,
     total_current_cost: totalCurrentCost,
@@ -326,6 +365,16 @@ export async function aggregateResults(
     sp_total_final_payment_1y: spTotalFinalPayment1y,
     sp_average_effective_discount_rate_30d: spAverageEffectiveDiscountRate30d,
     sp_average_effective_discount_rate_1y: spAverageEffectiveDiscountRate1y,
+    // Mix
+    mix_total_commitment_cost: mixTotalCommitmentCost,
+    mix_total_cost_reduction: mixTotalCostReduction,
+    mix_total_refund: mixTotalRefund,
+    mix_total_insurance_30d: mixTotalInsurance30d,
+    mix_total_insurance_1y: mixTotalInsurance1y,
+    mix_total_final_payment_30d: mixTotalFinalPayment30d,
+    mix_total_final_payment_1y: mixTotalFinalPayment1y,
+    mix_average_effective_discount_rate_30d: mixAverageEffectiveDiscountRate30d,
+    mix_average_effective_discount_rate_1y: mixAverageEffectiveDiscountRate1y,
     details,
   };
 }

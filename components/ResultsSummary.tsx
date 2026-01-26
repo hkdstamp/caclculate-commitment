@@ -4,9 +4,10 @@ import { AggregatedResult } from '@/lib/types';
 
 interface ResultsSummaryProps {
   results: AggregatedResult;
+  reservationType?: 'RI' | 'SP' | 'Mix';
 }
 
-export default function ResultsSummary({ results }: ResultsSummaryProps) {
+export default function ResultsSummary({ results, reservationType = 'Mix' }: ResultsSummaryProps) {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('ja-JP', {
       style: 'currency',
@@ -53,8 +54,92 @@ export default function ResultsSummary({ results }: ResultsSummaryProps) {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className={`grid gap-6 ${reservationType === 'Mix' ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
+        {/* Mix結果（Mixモードのみ） */}
+        {reservationType === 'Mix' && (
+        <div className="border-2 border-purple-300 rounded-lg p-5 bg-purple-50">
+          <h3 className="text-xl font-bold text-purple-800 mb-4 flex items-center">
+            <span className="mr-2">🔀</span>
+            Mix (RI + SP)
+          </h3>
+
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-700">コミットメントコスト</span>
+              <span className="font-semibold text-gray-900">
+                {formatCurrency(results.mix_total_commitment_cost)}
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-700">コスト削減額</span>
+              <span className="font-semibold text-green-600">
+                -{formatCurrency(results.mix_total_cost_reduction)}
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-700">返金額</span>
+              <span className="font-semibold text-blue-600">
+                {formatCurrency(results.mix_total_refund)}
+              </span>
+            </div>
+
+            <hr className="border-gray-300" />
+
+            <div className="bg-white rounded p-3">
+              <p className="text-xs font-semibold text-gray-600 mb-2">
+                30日保証プラン
+              </p>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-600">保険料 (50%)</span>
+                <span className="text-sm font-medium">
+                  {formatCurrency(results.mix_total_insurance_30d)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-600">最終支払額</span>
+                <span className="text-sm font-bold text-purple-700">
+                  {formatCurrency(results.mix_total_final_payment_30d)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-600">実効割引率</span>
+                <span className="text-sm font-bold text-green-600">
+                  {formatPercent(results.mix_average_effective_discount_rate_30d)}
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-white rounded p-3">
+              <p className="text-xs font-semibold text-gray-600 mb-2">
+                1年保証プラン
+              </p>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-600">保険料 (30%)</span>
+                <span className="text-sm font-medium">
+                  {formatCurrency(results.mix_total_insurance_1y)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-600">最終支払額</span>
+                <span className="text-sm font-bold text-purple-700">
+                  {formatCurrency(results.mix_total_final_payment_1y)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-600">実効割引率</span>
+                <span className="text-sm font-bold text-green-600">
+                  {formatPercent(results.mix_average_effective_discount_rate_1y)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        )}
+
         {/* RI結果 */}
+        {(reservationType === 'RI' || reservationType === 'Mix') && (
         <div className="border-2 border-primary-300 rounded-lg p-5 bg-primary-50">
           <h3 className="text-xl font-bold text-primary-800 mb-4 flex items-center">
             <span className="mr-2">🔹</span>
@@ -134,8 +219,10 @@ export default function ResultsSummary({ results }: ResultsSummaryProps) {
             </div>
           </div>
         </div>
+        )}
 
         {/* SP結果 */}
+        {(reservationType === 'SP' || reservationType === 'Mix') && (
         <div className="border-2 border-secondary-300 rounded-lg p-5 bg-secondary-50">
           <h3 className="text-xl font-bold text-secondary-800 mb-4 flex items-center">
             <span className="mr-2">💎</span>
@@ -215,6 +302,7 @@ export default function ResultsSummary({ results }: ResultsSummaryProps) {
             </div>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

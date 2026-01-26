@@ -11,27 +11,36 @@ export default function Home() {
   const [costData, setCostData] = useState<AWSCostData[]>([]);
   const [riRate, setRiRate] = useState(1.0);
   const [spRate, setSpRate] = useState(1.0);
+  const [reservationType, setReservationType] = useState<'RI' | 'SP' | 'Mix'>('Mix');
   const [results, setResults] = useState<AggregatedResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleDataLoaded = (data: AWSCostData[]) => {
     setCostData(data);
-    calculateResults(data, riRate, spRate);
+    calculateResults(data, riRate, spRate, reservationType);
   };
 
   const handleRateChange = (newRiRate: number, newSpRate: number) => {
     setRiRate(newRiRate);
     setSpRate(newSpRate);
     if (costData.length > 0) {
-      calculateResults(costData, newRiRate, newSpRate);
+      calculateResults(costData, newRiRate, newSpRate, reservationType);
+    }
+  };
+
+  const handleReservationTypeChange = (type: 'RI' | 'SP' | 'Mix') => {
+    setReservationType(type);
+    if (costData.length > 0) {
+      calculateResults(costData, riRate, spRate, type);
     }
   };
 
   const calculateResults = async (
     data: AWSCostData[],
     riAppliedRate: number,
-    spAppliedRate: number
+    spAppliedRate: number,
+    resType: 'RI' | 'SP' | 'Mix'
   ) => {
     setLoading(true);
     setError(null);
@@ -47,6 +56,7 @@ export default function Home() {
           params: {
             ri_applied_rate: riAppliedRate,
             sp_applied_rate: spAppliedRate,
+            reservation_type: resType,
             insurance_rate_30d: 0.5, // 30日保証: 50%
             insurance_rate_1y: 0.3,  // 1年保証: 30%
           },
@@ -106,7 +116,10 @@ export default function Home() {
           </div>
 
           {/* 適用率設定 */}
-          <ApplyRateConfig onRateChange={handleRateChange} />
+          <ApplyRateConfig 
+            onRateChange={handleRateChange}
+            onReservationTypeChange={handleReservationTypeChange}
+          />
 
           {/* ローディング表示 */}
           {loading && (
@@ -145,7 +158,7 @@ export default function Home() {
           {/* 結果表示 */}
           {!loading && results && (
             <>
-              <ResultsSummary results={results} />
+              <ResultsSummary results={results} reservationType={reservationType} />
               <ResultsTable results={results} />
             </>
           )}

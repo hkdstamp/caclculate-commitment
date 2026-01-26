@@ -65,6 +65,7 @@ export interface CalculationParams {
   sp_applied_rate: number; // SP適用率 0-1
   insurance_rate_30d: number; // 30日保証の保険料率 (デフォルト 0.5)
   insurance_rate_1y: number; // 1年保証の保険料率 (デフォルト 0.3)
+  reservation_type?: 'RI' | 'SP' | 'Mix'; // 予約タイプ（デフォルト: Mix）
 }
 
 // 集計結果
@@ -93,6 +94,17 @@ export interface AggregatedResult {
   sp_total_final_payment_1y: number;
   sp_average_effective_discount_rate_30d: number;
   sp_average_effective_discount_rate_1y: number;
+  
+  // Mix集計（SPがある場合はSP、ない場合はRI）
+  mix_total_commitment_cost: number;
+  mix_total_cost_reduction: number;
+  mix_total_refund: number;
+  mix_total_insurance_30d: number;
+  mix_total_insurance_1y: number;
+  mix_total_final_payment_30d: number;
+  mix_total_final_payment_1y: number;
+  mix_average_effective_discount_rate_30d: number;
+  mix_average_effective_discount_rate_1y: number;
   
   // 詳細結果
   details: CommitmentCostResult[];
