@@ -344,9 +344,11 @@ export async function calculateCommitmentCost(
   return {
     costData,
     // RI（30日保証と1年保証で異なる契約を使用）
-    ri_discount: riDiscount30d, // 表示用には30日保証のdiscountを使用
+    ri_discount: riDiscount30d, // 30日保証のdiscount
+    ri_discount_1y: riDiscount1y, // 1年保証のdiscount（RDS専用）
     ri_commitment_cost: riCommitmentCost30d, // 表示用には30日保証を使用
     ri_upfront_fee: riUpfrontFee30d, // 30日保証の初期費用
+    ri_upfront_fee_1y: riUpfrontFee1y, // 1年保証の初期費用
     ri_applied_rate: params.ri_applied_rate,
     ri_cost_reduction: riCostReduction30d,
     ri_refund: riRefund30d,

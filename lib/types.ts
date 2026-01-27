@@ -34,9 +34,11 @@ export interface CommitmentCostResult {
   costData: AWSCostData;
   
   // RI計算結果
-  ri_discount?: ReservationDiscount;
+  ri_discount?: ReservationDiscount; // 30日保証用のdiscount
+  ri_discount_1y?: ReservationDiscount; // 1年保証用のdiscount（RDS専用）
   ri_commitment_cost: number;
-  ri_upfront_fee: number; // RI初期費用
+  ri_upfront_fee: number; // RI初期費用（30日保証）
+  ri_upfront_fee_1y: number; // RI初期費用（1年保証）
   ri_applied_rate: number; // 適用率 0-1
   ri_cost_reduction: number;
   ri_refund: number;

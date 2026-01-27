@@ -58,7 +58,8 @@ export default function ResultsTable({ results }: ResultsTableProps) {
       if (isMix) {
         // Mix: SPがある場合はSP、ない場合はRI
         const useSP = !!detail.sp_discount;
-        discount = useSP ? detail.sp_discount : detail.ri_discount;
+        // RIの場合、1年保証は ri_discount_1y を、30日保証は ri_discount を使用
+        discount = useSP ? detail.sp_discount : (is30d ? detail.ri_discount : detail.ri_discount_1y);
         commitmentCost = useSP ? detail.sp_commitment_cost : detail.ri_commitment_cost;
         appliedRate = useSP ? detail.sp_applied_rate : detail.ri_applied_rate;
         costReduction = useSP ? detail.sp_cost_reduction : detail.ri_cost_reduction;
@@ -73,7 +74,10 @@ export default function ResultsTable({ results }: ResultsTableProps) {
           ? (is30d ? detail.sp_effective_discount_rate_30d : detail.sp_effective_discount_rate_1y)
           : (is30d ? detail.ri_effective_discount_rate_30d : detail.ri_effective_discount_rate_1y);
       } else {
-        discount = isRI ? detail.ri_discount : detail.sp_discount;
+        // RIの場合、1年保証は ri_discount_1y を、30日保証は ri_discount を使用
+        discount = isRI 
+          ? (is30d ? detail.ri_discount : detail.ri_discount_1y)
+          : detail.sp_discount;
         commitmentCost = isRI ? detail.ri_commitment_cost : detail.sp_commitment_cost;
         appliedRate = isRI ? detail.ri_applied_rate : detail.sp_applied_rate;
         costReduction = isRI ? detail.ri_cost_reduction : detail.sp_cost_reduction;
@@ -267,7 +271,8 @@ export default function ResultsTable({ results }: ResultsTableProps) {
               if (isMix) {
                 // Mix: SPがある場合はSP、ない場合はRI
                 const useSP = !!detail.sp_discount;
-                discount = useSP ? detail.sp_discount : detail.ri_discount;
+                // RIの場合、1年保証は ri_discount_1y を、30日保証は ri_discount を使用
+                discount = useSP ? detail.sp_discount : (is30d ? detail.ri_discount : detail.ri_discount_1y);
                 commitmentCost = useSP ? detail.sp_commitment_cost : detail.ri_commitment_cost;
                 appliedRate = useSP ? detail.sp_applied_rate : detail.ri_applied_rate;
                 costReduction = useSP ? detail.sp_cost_reduction : detail.ri_cost_reduction;
@@ -282,7 +287,10 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                   ? (is30d ? detail.sp_effective_discount_rate_30d : detail.sp_effective_discount_rate_1y)
                   : (is30d ? detail.ri_effective_discount_rate_30d : detail.ri_effective_discount_rate_1y);
               } else {
-                discount = isRI ? detail.ri_discount : detail.sp_discount;
+                // RIの場合、1年保証は ri_discount_1y を、30日保証は ri_discount を使用
+                discount = isRI 
+                  ? (is30d ? detail.ri_discount : detail.ri_discount_1y)
+                  : detail.sp_discount;
                 commitmentCost = isRI ? detail.ri_commitment_cost : detail.sp_commitment_cost;
                 appliedRate = isRI ? detail.ri_applied_rate : detail.sp_applied_rate;
                 costReduction = isRI ? detail.ri_cost_reduction : detail.sp_cost_reduction;
