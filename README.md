@@ -395,6 +395,11 @@ npm run start
 - **RDS**: Reserved Instanceの価格（NoUpfront/PartialUpfront/AllUpfront）
 - **リージョン**: 全リージョン対応
 - **契約期間**: 1年、3年
+- **初期費用（Upfront Fee）**: PartialUpfront/AllUpfrontの初期費用を自動取得
+  - AWS Price List APIのpriceDimensionsから抽出
+  - `unit: "Hrs"` → 時間単価（hourly rate）
+  - `unit: "Quantity"` → 初期費用（upfront fee）
+  - Multi-AZやNode数による自動調整に対応
 
 #### Savings Plans (SP)
 - **EC2 Compute Savings Plans**: 標準的な割引率を適用

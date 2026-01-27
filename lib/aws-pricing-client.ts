@@ -201,24 +201,38 @@ async function fetchEC2RIPricing(
                 const leaseContractLength = attributes.LeaseContractLength;
                 const contractYears = leaseContractLength === '1yr' ? 1 : 3;
                 
-                // 時間単価を取得
+                // 時間単価と初期費用を取得
                 const priceDimensions = Object.values(reservedTerm.priceDimensions) as any[];
-                if (priceDimensions.length > 0) {
-                  const pricePerUnit = parseFloat(priceDimensions[0].pricePerUnit.USD);
+                let hourlyRate = 0;
+                let upfrontFee = 0;
+                
+                // priceDimensionsから時間単価と初期費用を抽出
+                for (const dimension of priceDimensions) {
+                  const unit = dimension.unit || '';
+                  const priceValue = parseFloat(dimension.pricePerUnit?.USD || '0');
                   
-                  if (pricePerUnit > 0) {
-                    discounts.push({
-                      service: 'Amazon Elastic Compute Cloud',
-                      contract_years: contractYears,
-                      payment_method: paymentOption.replace(' ', '') as 'NoUpfront' | 'PartialUpfront' | 'AllUpfront',
-                      region,
-                      instance_type: instanceType,
-                      unit_price: pricePerUnit,
-                      unit_price_unit: 'per hour',
-                      reservation_type: 'RI',
-                      tenancy,
-                    });
+                  if (unit === 'Hrs') {
+                    // 時間単価
+                    hourlyRate = priceValue;
+                  } else if (unit === 'Quantity') {
+                    // 初期費用（PartialUpfront/AllUpfrontの場合）
+                    upfrontFee = priceValue;
                   }
+                }
+                  
+                if (hourlyRate > 0 || upfrontFee > 0) {
+                  discounts.push({
+                    service: 'Amazon Elastic Compute Cloud',
+                    contract_years: contractYears,
+                    payment_method: paymentOption.replace(' ', '') as 'NoUpfront' | 'PartialUpfront' | 'AllUpfront',
+                    region,
+                    instance_type: instanceType,
+                    unit_price: hourlyRate,
+                    unit_price_unit: 'per hour',
+                    reservation_type: 'RI',
+                    tenancy,
+                    upfront_fee: upfrontFee > 0 ? upfrontFee : undefined,
+                  });
                 }
               }
             }
@@ -292,22 +306,37 @@ async function fetchRDSRIPricing(
                 const leaseContractLength = attributes.LeaseContractLength;
                 const contractYears = leaseContractLength === '1yr' ? 1 : 3;
                 
+                // 時間単価と初期費用を取得
                 const priceDimensions = Object.values(reservedTerm.priceDimensions) as any[];
-                if (priceDimensions.length > 0) {
-                  const pricePerUnit = parseFloat(priceDimensions[0].pricePerUnit.USD);
+                let hourlyRate = 0;
+                let upfrontFee = 0;
+                
+                // priceDimensionsから時間単価と初期費用を抽出
+                for (const dimension of priceDimensions) {
+                  const unit = dimension.unit || '';
+                  const priceValue = parseFloat(dimension.pricePerUnit?.USD || '0');
                   
-                  if (pricePerUnit > 0) {
-                    discounts.push({
-                      service: 'Amazon Relational Database Service',
-                      contract_years: contractYears,
-                      payment_method: paymentOption.replace(' ', '') as 'NoUpfront' | 'PartialUpfront' | 'AllUpfront',
-                      region,
-                      instance_type: instanceType,
-                      unit_price: pricePerUnit,
-                      unit_price_unit: 'per hour',
-                      reservation_type: 'RI',
-                    });
+                  if (unit === 'Hrs') {
+                    // 時間単価
+                    hourlyRate = priceValue;
+                  } else if (unit === 'Quantity') {
+                    // 初期費用（PartialUpfront/AllUpfrontの場合）
+                    upfrontFee = priceValue;
                   }
+                }
+                  
+                if (hourlyRate > 0 || upfrontFee > 0) {
+                  discounts.push({
+                    service: 'Amazon Relational Database Service',
+                    contract_years: contractYears,
+                    payment_method: paymentOption.replace(' ', '') as 'NoUpfront' | 'PartialUpfront' | 'AllUpfront',
+                    region,
+                    instance_type: instanceType,
+                    unit_price: hourlyRate,
+                    unit_price_unit: 'per hour',
+                    reservation_type: 'RI',
+                    upfront_fee: upfrontFee > 0 ? upfrontFee : undefined,
+                  });
                 }
               }
             }
