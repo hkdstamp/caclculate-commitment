@@ -346,12 +346,18 @@ export async function calculateCommitmentCost(
     // RI（30日保証と1年保証で異なる契約を使用）
     ri_discount: riDiscount30d, // 30日保証のdiscount
     ri_discount_1y: riDiscount1y, // 1年保証のdiscount（RDS専用）
-    ri_commitment_cost: riCommitmentCost30d, // 表示用には30日保証を使用
-    ri_upfront_fee: riUpfrontFee30d, // 30日保証の初期費用
+    ri_commitment_cost: riCommitmentCost30d, // 後方互換性のため残す
+    ri_commitment_cost_30d: riCommitmentCost30d, // 30日保証のコミットメントコスト
+    ri_commitment_cost_1y: riCommitmentCost1y, // 1年保証のコミットメントコスト
+    ri_upfront_fee: riUpfrontFee30d, // 後方互換性のため残す
     ri_upfront_fee_1y: riUpfrontFee1y, // 1年保証の初期費用
     ri_applied_rate: params.ri_applied_rate,
-    ri_cost_reduction: riCostReduction30d,
-    ri_refund: riRefund30d,
+    ri_cost_reduction: riCostReduction30d, // 後方互換性のため残す
+    ri_cost_reduction_30d: riCostReduction30d, // 30日保証のコスト削減額
+    ri_cost_reduction_1y: riCostReduction1y, // 1年保証のコスト削減額
+    ri_refund: riRefund30d, // 後方互換性のため残す
+    ri_refund_30d: riRefund30d, // 30日保証の返金額
+    ri_refund_1y: riRefund1y, // 1年保証の返金額
     ri_insurance_30d: riInsurance30d,
     ri_insurance_1y: riInsurance1y,
     ri_final_payment_30d: riFinalPayment30d,
@@ -404,15 +410,41 @@ export async function aggregateResults(
     (sum, d) => sum + d.ri_commitment_cost,
     0
   );
+  const riTotalCommitmentCost30d = details.reduce(
+    (sum, d) => sum + d.ri_commitment_cost_30d,
+    0
+  );
+  const riTotalCommitmentCost1y = details.reduce(
+    (sum, d) => sum + d.ri_commitment_cost_1y,
+    0
+  );
   const riTotalUpfrontFee = details.reduce(
     (sum, d) => sum + d.ri_upfront_fee,
+    0
+  );
+  const riTotalUpfrontFee30d = details.reduce(
+    (sum, d) => sum + d.ri_upfront_fee,
+    0
+  );
+  const riTotalUpfrontFee1y = details.reduce(
+    (sum, d) => sum + d.ri_upfront_fee_1y,
     0
   );
   const riTotalCostReduction = details.reduce(
     (sum, d) => sum + d.ri_cost_reduction,
     0
   );
+  const riTotalCostReduction30d = details.reduce(
+    (sum, d) => sum + d.ri_cost_reduction_30d,
+    0
+  );
+  const riTotalCostReduction1y = details.reduce(
+    (sum, d) => sum + d.ri_cost_reduction_1y,
+    0
+  );
   const riTotalRefund = details.reduce((sum, d) => sum + d.ri_refund, 0);
+  const riTotalRefund30d = details.reduce((sum, d) => sum + d.ri_refund_30d, 0);
+  const riTotalRefund1y = details.reduce((sum, d) => sum + d.ri_refund_1y, 0);
   const riTotalInsurance30d = details.reduce(
     (sum, d) => sum + d.ri_insurance_30d,
     0
@@ -485,16 +517,48 @@ export async function aggregateResults(
     return sum + (d.sp_discount ? d.sp_commitment_cost : d.ri_commitment_cost);
   }, 0);
   
+  const mixTotalCommitmentCost30d = details.reduce((sum, d) => {
+    return sum + (d.sp_discount ? d.sp_commitment_cost : d.ri_commitment_cost_30d);
+  }, 0);
+  
+  const mixTotalCommitmentCost1y = details.reduce((sum, d) => {
+    return sum + (d.sp_discount ? d.sp_commitment_cost : d.ri_commitment_cost_1y);
+  }, 0);
+  
   const mixTotalUpfrontFee = details.reduce((sum, d) => {
     return sum + (d.sp_discount ? d.sp_upfront_fee : d.ri_upfront_fee);
+  }, 0);
+  
+  const mixTotalUpfrontFee30d = details.reduce((sum, d) => {
+    return sum + (d.sp_discount ? d.sp_upfront_fee : d.ri_upfront_fee);
+  }, 0);
+  
+  const mixTotalUpfrontFee1y = details.reduce((sum, d) => {
+    return sum + (d.sp_discount ? d.sp_upfront_fee : d.ri_upfront_fee_1y);
   }, 0);
   
   const mixTotalCostReduction = details.reduce((sum, d) => {
     return sum + (d.sp_discount ? d.sp_cost_reduction : d.ri_cost_reduction);
   }, 0);
   
+  const mixTotalCostReduction30d = details.reduce((sum, d) => {
+    return sum + (d.sp_discount ? d.sp_cost_reduction : d.ri_cost_reduction_30d);
+  }, 0);
+  
+  const mixTotalCostReduction1y = details.reduce((sum, d) => {
+    return sum + (d.sp_discount ? d.sp_cost_reduction : d.ri_cost_reduction_1y);
+  }, 0);
+  
   const mixTotalRefund = details.reduce((sum, d) => {
     return sum + (d.sp_discount ? d.sp_refund : d.ri_refund);
+  }, 0);
+  
+  const mixTotalRefund30d = details.reduce((sum, d) => {
+    return sum + (d.sp_discount ? d.sp_refund : d.ri_refund_30d);
+  }, 0);
+  
+  const mixTotalRefund1y = details.reduce((sum, d) => {
+    return sum + (d.sp_discount ? d.sp_refund : d.ri_refund_1y);
   }, 0);
   
   const mixTotalInsurance30d = details.reduce((sum, d) => {
@@ -527,9 +591,17 @@ export async function aggregateResults(
     total_current_cost: totalCurrentCost,
     // RI
     ri_total_commitment_cost: riTotalCommitmentCost,
+    ri_total_commitment_cost_30d: riTotalCommitmentCost30d,
+    ri_total_commitment_cost_1y: riTotalCommitmentCost1y,
     ri_total_upfront_fee: riTotalUpfrontFee,
+    ri_total_upfront_fee_30d: riTotalUpfrontFee30d,
+    ri_total_upfront_fee_1y: riTotalUpfrontFee1y,
     ri_total_cost_reduction: riTotalCostReduction,
+    ri_total_cost_reduction_30d: riTotalCostReduction30d,
+    ri_total_cost_reduction_1y: riTotalCostReduction1y,
     ri_total_refund: riTotalRefund,
+    ri_total_refund_30d: riTotalRefund30d,
+    ri_total_refund_1y: riTotalRefund1y,
     ri_total_insurance_30d: riTotalInsurance30d,
     ri_total_insurance_1y: riTotalInsurance1y,
     ri_total_final_payment_30d: riTotalFinalPayment30d,
@@ -549,9 +621,17 @@ export async function aggregateResults(
     sp_average_effective_discount_rate_1y: spAverageEffectiveDiscountRate1y,
     // Mix
     mix_total_commitment_cost: mixTotalCommitmentCost,
+    mix_total_commitment_cost_30d: mixTotalCommitmentCost30d,
+    mix_total_commitment_cost_1y: mixTotalCommitmentCost1y,
     mix_total_upfront_fee: mixTotalUpfrontFee,
+    mix_total_upfront_fee_30d: mixTotalUpfrontFee30d,
+    mix_total_upfront_fee_1y: mixTotalUpfrontFee1y,
     mix_total_cost_reduction: mixTotalCostReduction,
+    mix_total_cost_reduction_30d: mixTotalCostReduction30d,
+    mix_total_cost_reduction_1y: mixTotalCostReduction1y,
     mix_total_refund: mixTotalRefund,
+    mix_total_refund_30d: mixTotalRefund30d,
+    mix_total_refund_1y: mixTotalRefund1y,
     mix_total_insurance_30d: mixTotalInsurance30d,
     mix_total_insurance_1y: mixTotalInsurance1y,
     mix_total_final_payment_30d: mixTotalFinalPayment30d,

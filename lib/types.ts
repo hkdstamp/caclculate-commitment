@@ -36,12 +36,18 @@ export interface CommitmentCostResult {
   // RI計算結果
   ri_discount?: ReservationDiscount; // 30日保証用のdiscount
   ri_discount_1y?: ReservationDiscount; // 1年保証用のdiscount（RDS専用）
-  ri_commitment_cost: number;
+  ri_commitment_cost: number; // 30日保証のコミットメントコスト（後方互換性のため残す）
+  ri_commitment_cost_30d: number; // 30日保証のコミットメントコスト
+  ri_commitment_cost_1y: number; // 1年保証のコミットメントコスト
   ri_upfront_fee: number; // RI初期費用（30日保証）
   ri_upfront_fee_1y: number; // RI初期費用（1年保証）
   ri_applied_rate: number; // 適用率 0-1
-  ri_cost_reduction: number;
-  ri_refund: number;
+  ri_cost_reduction: number; // 30日保証のコスト削減額（後方互換性のため残す）
+  ri_cost_reduction_30d: number; // 30日保証のコスト削減額
+  ri_cost_reduction_1y: number; // 1年保証のコスト削減額
+  ri_refund: number; // 30日保証の返金額（後方互換性のため残す）
+  ri_refund_30d: number; // 30日保証の返金額
+  ri_refund_1y: number; // 1年保証の返金額
   ri_insurance_30d: number; // 30日保証保険料
   ri_insurance_1y: number; // 1年保証保険料
   ri_final_payment_30d: number; // 30日保証の最終支払額
@@ -79,10 +85,18 @@ export interface AggregatedResult {
   total_current_cost: number; // 現在の総コスト（lineitem_unblendedrate × usage_amount）
   
   // RI集計
-  ri_total_commitment_cost: number;
-  ri_total_upfront_fee: number; // RI初期費用の総計
-  ri_total_cost_reduction: number;
-  ri_total_refund: number;
+  ri_total_commitment_cost: number; // 30日保証のコミットメントコスト総計（後方互換性のため残す）
+  ri_total_commitment_cost_30d: number; // 30日保証のコミットメントコスト総計
+  ri_total_commitment_cost_1y: number; // 1年保証のコミットメントコスト総計
+  ri_total_upfront_fee: number; // RI初期費用の総計（後方互換性のため残す）
+  ri_total_upfront_fee_30d: number; // 30日保証のRI初期費用の総計
+  ri_total_upfront_fee_1y: number; // 1年保証のRI初期費用の総計
+  ri_total_cost_reduction: number; // 30日保証のコスト削減額総計（後方互換性のため残す）
+  ri_total_cost_reduction_30d: number; // 30日保証のコスト削減額総計
+  ri_total_cost_reduction_1y: number; // 1年保証のコスト削減額総計
+  ri_total_refund: number; // 30日保証の返金額総計（後方互換性のため残す）
+  ri_total_refund_30d: number; // 30日保証の返金額総計
+  ri_total_refund_1y: number; // 1年保証の返金額総計
   ri_total_insurance_30d: number;
   ri_total_insurance_1y: number;
   ri_total_final_payment_30d: number;
@@ -103,10 +117,18 @@ export interface AggregatedResult {
   sp_average_effective_discount_rate_1y: number;
   
   // Mix集計（SPがある場合はSP、ない場合はRI）
-  mix_total_commitment_cost: number;
-  mix_total_upfront_fee: number; // Mix初期費用の総計
-  mix_total_cost_reduction: number;
-  mix_total_refund: number;
+  mix_total_commitment_cost: number; // 30日保証のコミットメントコスト総計（後方互換性のため残す）
+  mix_total_commitment_cost_30d: number; // 30日保証のコミットメントコスト総計
+  mix_total_commitment_cost_1y: number; // 1年保証のコミットメントコスト総計
+  mix_total_upfront_fee: number; // Mix初期費用の総計（後方互換性のため残す）
+  mix_total_upfront_fee_30d: number; // 30日保証の初期費用の総計
+  mix_total_upfront_fee_1y: number; // 1年保証の初期費用の総計
+  mix_total_cost_reduction: number; // 30日保証のコスト削減額総計（後方互換性のため残す）
+  mix_total_cost_reduction_30d: number; // 30日保証のコスト削減額総計
+  mix_total_cost_reduction_1y: number; // 1年保証のコスト削減額総計
+  mix_total_refund: number; // 30日保証の返金額総計（後方互換性のため残す）
+  mix_total_refund_30d: number; // 30日保証の返金額総計
+  mix_total_refund_1y: number; // 1年保証の返金額総計
   mix_total_insurance_30d: number;
   mix_total_insurance_1y: number;
   mix_total_final_payment_30d: number;

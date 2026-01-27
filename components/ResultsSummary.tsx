@@ -76,40 +76,34 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
           </h3>
 
           <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-700">コミットメントコスト</span>
-              <span className="font-semibold text-gray-900">
-                {formatCurrency(results.mix_total_commitment_cost)}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-700">初期費用（別途）</span>
-              <span className="font-semibold text-orange-600">
-                {formatCurrency(results.mix_total_upfront_fee)}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-700">コスト削減額</span>
-              <span className="font-semibold text-green-600">
-                -{formatCurrency(results.mix_total_cost_reduction)}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-700">返金額</span>
-              <span className="font-semibold text-blue-600">
-                {formatCurrency(results.mix_total_refund)}
-              </span>
-            </div>
-
-            <hr className="border-gray-300" />
-
             <div className="bg-white rounded p-3">
               <p className="text-xs font-semibold text-gray-600 mb-2">
                 30日保証プラン
               </p>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-600">コミットメントコスト</span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {formatCurrency(results.mix_total_commitment_cost_30d)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-600">初期費用（別途）</span>
+                <span className="text-sm font-semibold text-orange-600">
+                  {formatCurrency(results.mix_total_upfront_fee_30d)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-600">コスト削減額</span>
+                <span className="text-sm font-semibold text-green-600">
+                  -{formatCurrency(results.mix_total_cost_reduction_30d)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-600">返金額</span>
+                <span className="text-sm font-semibold text-blue-600">
+                  {formatCurrency(results.mix_total_refund_30d)}
+                </span>
+              </div>
               <div className="flex justify-between items-center mb-1">
                 <span className="text-xs text-gray-600">保険料 (50%)</span>
                 <span className="text-sm font-medium">
@@ -134,6 +128,30 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
               <p className="text-xs font-semibold text-gray-600 mb-2">
                 1年保証プラン
               </p>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-600">コミットメントコスト</span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {formatCurrency(results.mix_total_commitment_cost_1y)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-600">初期費用（別途）</span>
+                <span className="text-sm font-semibold text-orange-600">
+                  {formatCurrency(results.mix_total_upfront_fee_1y)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-600">コスト削減額</span>
+                <span className="text-sm font-semibold text-green-600">
+                  -{formatCurrency(results.mix_total_cost_reduction_1y)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-600">返金額</span>
+                <span className="text-sm font-semibold text-blue-600">
+                  {formatCurrency(results.mix_total_refund_1y)}
+                </span>
+              </div>
               <div className="flex justify-between items-center mb-1">
                 <span className="text-xs text-gray-600">保険料 (30%)</span>
                 <span className="text-sm font-medium">
@@ -164,40 +182,34 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
           </h3>
 
           <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-700">コミットメントコスト</span>
-              <span className="font-semibold text-gray-900">
-                {formatCurrency(results.ri_total_commitment_cost)}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-700">初期費用（別途）</span>
-              <span className="font-semibold text-orange-600">
-                {formatCurrency(results.ri_total_upfront_fee)}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-700">コスト削減額</span>
-              <span className="font-semibold text-green-600">
-                -{formatCurrency(results.ri_total_cost_reduction)}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-700">返金額</span>
-              <span className="font-semibold text-blue-600">
-                {formatCurrency(results.ri_total_refund)}
-              </span>
-            </div>
-
-            <hr className="border-gray-300" />
-
             <div className="bg-white rounded p-3">
               <p className="text-xs font-semibold text-gray-600 mb-2">
                 30日保証プラン
               </p>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-600">コミットメントコスト</span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {formatCurrency(results.ri_total_commitment_cost_30d)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-600">初期費用（別途）</span>
+                <span className="text-sm font-semibold text-orange-600">
+                  {formatCurrency(results.ri_total_upfront_fee_30d)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-600">コスト削減額</span>
+                <span className="text-sm font-semibold text-green-600">
+                  -{formatCurrency(results.ri_total_cost_reduction_30d)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-600">返金額</span>
+                <span className="text-sm font-semibold text-blue-600">
+                  {formatCurrency(results.ri_total_refund_30d)}
+                </span>
+              </div>
               <div className="flex justify-between items-center mb-1">
                 <span className="text-xs text-gray-600">保険料 (50%)</span>
                 <span className="text-sm font-medium">
@@ -222,6 +234,30 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
               <p className="text-xs font-semibold text-gray-600 mb-2">
                 1年保証プラン
               </p>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-600">コミットメントコスト</span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {formatCurrency(results.ri_total_commitment_cost_1y)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-600">初期費用（別途）</span>
+                <span className="text-sm font-semibold text-orange-600">
+                  {formatCurrency(results.ri_total_upfront_fee_1y)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-600">コスト削減額</span>
+                <span className="text-sm font-semibold text-green-600">
+                  -{formatCurrency(results.ri_total_cost_reduction_1y)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-600">返金額</span>
+                <span className="text-sm font-semibold text-blue-600">
+                  {formatCurrency(results.ri_total_refund_1y)}
+                </span>
+              </div>
               <div className="flex justify-between items-center mb-1">
                 <span className="text-xs text-gray-600">保険料 (30%)</span>
                 <span className="text-sm font-medium">
