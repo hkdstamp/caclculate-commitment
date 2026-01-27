@@ -381,29 +381,93 @@ export async function calculateCommitmentCost(
 }
 
 /**
+ * 集約キーを生成（詳細種別と混合単価を除外）
+ * 
+ * 集約キー:
+ * - サービス (service)
+ * - リソースID (lineitem_resourceid)
+ * - インスタンス種別 (product_instancetype)
+ * - 課金詳細 (lineitem_operation)
+ * - リージョン (product_region)
+ * - オンデマンド単価 (pricing_publicondemandrate)
+ * 
+ * 除外項目:
+ * - 詳細種別 (lineitem_lineitemtype) - 集約するため
+ * - 混合単価 (lineitem_unblendedrate) - Usage/DiscountedUsageで異なるため
+ */
+function getAggregationKey(data: AWSCostData): string {
+  return [
+    data.service,
+    data.lineitem_resourceid,
+    data.product_instancetype,
+    data.lineitem_operation,
+    data.product_region,
+    data.pricing_publicondemandrate,
+  ].join('|');
+}
+
+/**
+ * コストデータを集約（詳細種別を除外してグループ化）
+ */
+function aggregateCostData(costDataList: AWSCostData[]): AWSCostData[] {
+  const aggregationMap = new Map<string, AWSCostData>();
+
+  for (const data of costDataList) {
+    const key = getAggregationKey(data);
+    
+    if (aggregationMap.has(key)) {
+      // 既存のエントリがある場合は、オンデマンドコストと利用量を加算
+      const existing = aggregationMap.get(key)!;
+      existing.ondemand_risk_cost += data.ondemand_risk_cost;
+      existing.usage_amount += data.usage_amount;
+    } else {
+      // 新しいエントリを作成（詳細種別は空文字列にする）
+      aggregationMap.set(key, {
+        ...data,
+        lineitem_lineitemtype: '', // 詳細種別を除外
+      });
+    }
+  }
+
+  return Array.from(aggregationMap.values());
+}
+
+/**
  * 複数のコストデータを集計して結果を返す（非同期版）
  */
 export async function aggregateResults(
   costDataList: AWSCostData[],
   params: CalculationParams
 ): Promise<AggregatedResult> {
+  // 現在の総コストは元データから計算（SavingsPlanCoveredUsage を除外）
+  const totalCurrentCost = costDataList.reduce((sum, d) => {
+    if (d.lineitem_lineitemtype === 'SavingsPlanCoveredUsage') {
+      return sum;
+    }
+    return sum + (d.lineitem_unblendedrate * d.usage_amount);
+  }, 0);
+
+  // コミットメント計算用に集約（詳細種別を除外してグループ化）
+  const aggregatedData = aggregateCostData(costDataList);
+
+  // デバッグログ（開発時のみ）
+  if (process.env.NODE_ENV === 'development') {
+    console.log('📊 Data Aggregation:', {
+      originalRecords: costDataList.length,
+      aggregatedRecords: aggregatedData.length,
+      totalCurrentCost,
+    });
+  }
+
+  // 集約されたデータでコミットメント計算
   const details = await Promise.all(
-    costDataList.map((costData) => calculateCommitmentCost(costData, params))
+    aggregatedData.map((costData) => calculateCommitmentCost(costData, params))
   );
 
   const totalOndemandCost = details.reduce(
     (sum, d) => sum + d.costData.ondemand_risk_cost,
     0
   );
-
-  // 現在の総コスト（lineitem_unblendedrate × usage_amount）
-  // SavingsPlanCoveredUsage のレコードは除外
-  const totalCurrentCost = details.reduce((sum, d) => {
-    if (d.costData.lineitem_lineitemtype === 'SavingsPlanCoveredUsage') {
-      return sum;
-    }
-    return sum + (d.costData.lineitem_unblendedrate * d.costData.usage_amount);
-  }, 0);
 
   // RI集計
   const riTotalCommitmentCost = details.reduce(
