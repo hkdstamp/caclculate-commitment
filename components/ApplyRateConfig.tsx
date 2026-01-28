@@ -23,9 +23,9 @@ export default function ApplyRateConfig({ onRateChange }: ApplyRateConfigProps) 
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">
-        ⚙️ 適用率の設定
+    <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+      <h2 className="text-2xl font-bold text-gray-900 mb-4">
+        適用率の設定
       </h2>
 
       <div className="space-y-6">
@@ -38,7 +38,7 @@ export default function ApplyRateConfig({ onRateChange }: ApplyRateConfigProps) 
             >
               RI (Reserved Instance) 適用率
             </label>
-            <span className="text-lg font-bold text-primary-600">
+            <span className="text-lg font-bold text-blue-600">
               {riRate}%
             </span>
           </div>
@@ -50,7 +50,7 @@ export default function ApplyRateConfig({ onRateChange }: ApplyRateConfigProps) 
             step="5"
             value={riRate}
             onChange={handleRiChange}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
           />
           <div className="flex justify-between text-xs text-gray-500 mt-1">
             <span>0%</span>
@@ -70,7 +70,7 @@ export default function ApplyRateConfig({ onRateChange }: ApplyRateConfigProps) 
             >
               SP (Savings Plans) 適用率
             </label>
-            <span className="text-lg font-bold text-secondary-600">
+            <span className="text-lg font-bold text-green-600">
               {spRate}%
             </span>
           </div>
@@ -82,7 +82,7 @@ export default function ApplyRateConfig({ onRateChange }: ApplyRateConfigProps) 
             step="5"
             value={spRate}
             onChange={handleSpChange}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-secondary-600"
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600"
           />
           <div className="flex justify-between text-xs text-gray-500 mt-1">
             <span>0%</span>

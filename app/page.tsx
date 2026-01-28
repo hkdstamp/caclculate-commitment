@@ -71,11 +71,11 @@ export default function Home() {
   return (
     <div className="max-w-7xl mx-auto">
       {/* 説明セクション */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-6">
-        <h2 className="text-xl font-bold text-blue-900 mb-2">
-          🚀 使い方
+      <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">
+          使い方
         </h2>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-blue-800">
+        <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
           <li>AWSコストデータのCSVファイルをアップロードします</li>
           <li>システムが自動的にRI（Reserved Instance）とSP（Savings Plans）の最適な割引プランを検索します</li>
           <li>適用率を調整して、コミットメント割引の適用度合いを設定します</li>
@@ -90,7 +90,7 @@ export default function Home() {
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
           <p className="text-red-800 font-medium">
-            ❌ エラー: {error}
+            エラー: {error}
           </p>
         </div>
       )}
@@ -101,7 +101,7 @@ export default function Home() {
           {/* データ読み込み成功メッセージ */}
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
             <p className="text-green-800 font-medium">
-              ✅ {costData.length} 件のコストデータを読み込みました
+              {costData.length} 件のコストデータを読み込みました
             </p>
           </div>
 
@@ -154,9 +154,8 @@ export default function Home() {
 
       {/* データが未ロードの場合 */}
       {costData.length === 0 && (
-        <div className="bg-white rounded-lg shadow-md p-12 text-center">
-          <div className="text-6xl mb-4">📊</div>
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">
+        <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">
             CSVファイルをアップロードしてください
           </h3>
           <p className="text-gray-500">
