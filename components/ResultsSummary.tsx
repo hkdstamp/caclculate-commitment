@@ -25,24 +25,14 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-8 mb-6">
       {/* ヘッダー */}
-      <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-200">
+      <div className="mb-8 pb-6 border-b border-gray-200">
         <h2 className="text-2xl font-bold text-gray-900">
           コスト最適化サマリー
         </h2>
-        <div className="flex gap-6 text-sm">
-          <div className="flex items-center gap-2">
-            <span className="text-gray-500">RI適用率</span>
-            <span className="font-semibold text-gray-900">{(riRate * 100).toFixed(0)}%</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-gray-500">SP適用率</span>
-            <span className="font-semibold text-gray-900">{(spRate * 100).toFixed(0)}%</span>
-          </div>
-        </div>
       </div>
 
       {/* オンデマンドコストと現在のコスト */}
-      <div className="mb-8 grid md:grid-cols-2 gap-4">
+      <div className="mb-6 grid md:grid-cols-2 gap-4">
         <div className="p-5 bg-gray-50 rounded-lg">
           <p className="text-sm text-gray-600 mb-1">
             総オンデマンドコスト
@@ -59,6 +49,21 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
           <p className="text-2xl font-bold text-blue-900">
             {formatCurrency(results.total_current_cost)}
           </p>
+        </div>
+      </div>
+
+      {/* 適用率 */}
+      <div className="mb-8 p-5 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+        <div className="flex items-center justify-center gap-8">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-gray-600">RI適用率</span>
+            <span className="text-xl font-bold text-blue-600">{(riRate * 100).toFixed(0)}%</span>
+          </div>
+          <div className="h-8 w-px bg-gray-300"></div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-gray-600">SP適用率</span>
+            <span className="text-xl font-bold text-green-600">{(spRate * 100).toFixed(0)}%</span>
+          </div>
         </div>
       </div>
 
