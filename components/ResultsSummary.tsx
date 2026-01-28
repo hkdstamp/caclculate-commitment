@@ -87,11 +87,11 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                 </p>
               </div>
               
-              {/* コミットメントコスト - 強調表示 */}
+              {/* 最終支払額 - 強調表示 */}
               <div className="bg-purple-50 rounded-lg p-3 mb-3">
-                <p className="text-xs text-purple-700 mb-1">コミットメントコスト</p>
+                <p className="text-xs text-purple-700 mb-1">最終支払額</p>
                 <p className="text-xl font-bold text-purple-900">
-                  {formatCurrency(results.mix_total_commitment_cost_30d)}
+                  {formatCurrency(results.mix_total_final_payment_30d)}
                 </p>
               </div>
               
@@ -103,15 +103,15 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">保険料 (50%)</span>
+                  <span className="text-gray-600">コミットメントコスト</span>
                   <span className="font-semibold text-gray-900">
-                    {formatCurrency(results.mix_total_insurance_30d)}
+                    {formatCurrency(results.mix_total_commitment_cost_30d)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">最終支払額</span>
+                  <span className="text-gray-600">保険料 (50%)</span>
                   <span className="font-semibold text-gray-900">
-                    {formatCurrency(results.mix_total_final_payment_30d)}
+                    {formatCurrency(results.mix_total_insurance_30d)}
                   </span>
                 </div>
               </div>
@@ -131,11 +131,11 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                 </p>
               </div>
               
-              {/* コミットメントコスト - 強調表示 */}
+              {/* 最終支払額 - 強調表示 */}
               <div className="bg-purple-50 rounded-lg p-3 mb-3">
-                <p className="text-xs text-purple-700 mb-1">コミットメントコスト</p>
+                <p className="text-xs text-purple-700 mb-1">最終支払額</p>
                 <p className="text-xl font-bold text-purple-900">
-                  {formatCurrency(results.mix_total_commitment_cost_1y)}
+                  {formatCurrency(results.mix_total_final_payment_1y)}
                 </p>
               </div>
               
@@ -147,15 +147,15 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">保険料 (30%)</span>
+                  <span className="text-gray-600">コミットメントコスト</span>
                   <span className="font-semibold text-gray-900">
-                    {formatCurrency(results.mix_total_insurance_1y)}
+                    {formatCurrency(results.mix_total_commitment_cost_1y)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">最終支払額</span>
+                  <span className="text-gray-600">保険料 (30%)</span>
                   <span className="font-semibold text-gray-900">
-                    {formatCurrency(results.mix_total_final_payment_1y)}
+                    {formatCurrency(results.mix_total_insurance_1y)}
                   </span>
                 </div>
               </div>
@@ -186,11 +186,11 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                 </p>
               </div>
               
-              {/* コミットメントコスト - 強調表示 */}
+              {/* 最終支払額 - 強調表示 */}
               <div className="bg-blue-50 rounded-lg p-3 mb-3">
-                <p className="text-xs text-blue-700 mb-1">コミットメントコスト</p>
+                <p className="text-xs text-blue-700 mb-1">最終支払額</p>
                 <p className="text-xl font-bold text-blue-900">
-                  {formatCurrency(results.ri_total_commitment_cost_30d)}
+                  {formatCurrency(results.ri_total_final_payment_30d)}
                 </p>
               </div>
               
@@ -202,15 +202,15 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">保険料 (50%)</span>
+                  <span className="text-gray-600">コミットメントコスト</span>
                   <span className="font-semibold text-gray-900">
-                    {formatCurrency(results.ri_total_insurance_30d)}
+                    {formatCurrency(results.ri_total_commitment_cost_30d)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">最終支払額</span>
+                  <span className="text-gray-600">保険料 (50%)</span>
                   <span className="font-semibold text-gray-900">
-                    {formatCurrency(results.ri_total_final_payment_30d)}
+                    {formatCurrency(results.ri_total_insurance_30d)}
                   </span>
                 </div>
               </div>
@@ -230,11 +230,11 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                 </p>
               </div>
               
-              {/* コミットメントコスト - 強調表示 */}
+              {/* 最終支払額 - 強調表示 */}
               <div className="bg-blue-50 rounded-lg p-3 mb-3">
-                <p className="text-xs text-blue-700 mb-1">コミットメントコスト</p>
+                <p className="text-xs text-blue-700 mb-1">最終支払額</p>
                 <p className="text-xl font-bold text-blue-900">
-                  {formatCurrency(results.ri_total_commitment_cost_1y)}
+                  {formatCurrency(results.ri_total_final_payment_1y)}
                 </p>
               </div>
               
@@ -246,15 +246,15 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">保険料 (30%)</span>
+                  <span className="text-gray-600">コミットメントコスト</span>
                   <span className="font-semibold text-gray-900">
-                    {formatCurrency(results.ri_total_insurance_1y)}
+                    {formatCurrency(results.ri_total_commitment_cost_1y)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">最終支払額</span>
+                  <span className="text-gray-600">保険料 (30%)</span>
                   <span className="font-semibold text-gray-900">
-                    {formatCurrency(results.ri_total_final_payment_1y)}
+                    {formatCurrency(results.ri_total_insurance_1y)}
                   </span>
                 </div>
               </div>
@@ -285,11 +285,11 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                 </p>
               </div>
               
-              {/* コミットメントコスト - 強調表示 */}
+              {/* 最終支払額 - 強調表示 */}
               <div className="bg-green-50 rounded-lg p-3 mb-3">
-                <p className="text-xs text-green-700 mb-1">コミットメントコスト</p>
+                <p className="text-xs text-green-700 mb-1">最終支払額</p>
                 <p className="text-xl font-bold text-green-900">
-                  {formatCurrency(results.sp_total_commitment_cost)}
+                  {formatCurrency(results.sp_total_final_payment_30d)}
                 </p>
               </div>
               
@@ -301,15 +301,15 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">保険料 (50%)</span>
+                  <span className="text-gray-600">コミットメントコスト</span>
                   <span className="font-semibold text-gray-900">
-                    {formatCurrency(results.sp_total_insurance_30d)}
+                    {formatCurrency(results.sp_total_commitment_cost)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">最終支払額</span>
+                  <span className="text-gray-600">保険料 (50%)</span>
                   <span className="font-semibold text-gray-900">
-                    {formatCurrency(results.sp_total_final_payment_30d)}
+                    {formatCurrency(results.sp_total_insurance_30d)}
                   </span>
                 </div>
               </div>
@@ -329,11 +329,11 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                 </p>
               </div>
               
-              {/* コミットメントコスト - 強調表示 */}
+              {/* 最終支払額 - 強調表示 */}
               <div className="bg-green-50 rounded-lg p-3 mb-3">
-                <p className="text-xs text-green-700 mb-1">コミットメントコスト</p>
+                <p className="text-xs text-green-700 mb-1">最終支払額</p>
                 <p className="text-xl font-bold text-green-900">
-                  {formatCurrency(results.sp_total_commitment_cost)}
+                  {formatCurrency(results.sp_total_final_payment_1y)}
                 </p>
               </div>
               
@@ -345,15 +345,15 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">保険料 (30%)</span>
+                  <span className="text-gray-600">コミットメントコスト</span>
                   <span className="font-semibold text-gray-900">
-                    {formatCurrency(results.sp_total_insurance_1y)}
+                    {formatCurrency(results.sp_total_commitment_cost)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">最終支払額</span>
+                  <span className="text-gray-600">保険料 (30%)</span>
                   <span className="font-semibold text-gray-900">
-                    {formatCurrency(results.sp_total_final_payment_1y)}
+                    {formatCurrency(results.sp_total_insurance_1y)}
                   </span>
                 </div>
               </div>
