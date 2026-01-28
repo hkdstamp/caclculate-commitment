@@ -103,6 +103,12 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   </span>
                 </div>
                 <div className="flex justify-between">
+                  <span className="text-gray-600">保険料 (50%)</span>
+                  <span className="font-semibold text-gray-900">
+                    {formatCurrency(results.mix_total_insurance_30d)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
                   <span className="text-gray-600">最終支払額</span>
                   <span className="font-semibold text-gray-900">
                     {formatCurrency(results.mix_total_final_payment_30d)}
@@ -138,6 +144,12 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   <span className="text-gray-600">初期費用（別途）</span>
                   <span className="font-semibold text-orange-600">
                     {formatCurrency(results.mix_total_upfront_fee_1y)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">保険料 (30%)</span>
+                  <span className="font-semibold text-gray-900">
+                    {formatCurrency(results.mix_total_insurance_1y)}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -190,6 +202,12 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   </span>
                 </div>
                 <div className="flex justify-between">
+                  <span className="text-gray-600">保険料 (50%)</span>
+                  <span className="font-semibold text-gray-900">
+                    {formatCurrency(results.ri_total_insurance_30d)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
                   <span className="text-gray-600">最終支払額</span>
                   <span className="font-semibold text-gray-900">
                     {formatCurrency(results.ri_total_final_payment_30d)}
@@ -225,6 +243,12 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   <span className="text-gray-600">初期費用（別途）</span>
                   <span className="font-semibold text-orange-600">
                     {formatCurrency(results.ri_total_upfront_fee_1y)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">保険料 (30%)</span>
+                  <span className="font-semibold text-gray-900">
+                    {formatCurrency(results.ri_total_insurance_1y)}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -277,6 +301,12 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   </span>
                 </div>
                 <div className="flex justify-between">
+                  <span className="text-gray-600">保険料 (50%)</span>
+                  <span className="font-semibold text-gray-900">
+                    {formatCurrency(results.sp_total_insurance_30d)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
                   <span className="text-gray-600">最終支払額</span>
                   <span className="font-semibold text-gray-900">
                     {formatCurrency(results.sp_total_final_payment_30d)}
@@ -312,6 +342,12 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   <span className="text-gray-600">初期費用（別途）</span>
                   <span className="font-semibold text-orange-600">
                     {formatCurrency(results.sp_total_upfront_fee)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">保険料 (30%)</span>
+                  <span className="font-semibold text-gray-900">
+                    {formatCurrency(results.sp_total_insurance_1y)}
                   </span>
                 </div>
                 <div className="flex justify-between">
