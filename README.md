@@ -139,73 +139,207 @@ ORDER BY
 
 ## 🧮 計算ロジック
 
+### データ集約ロジック
+
+**コミットメントコスト計算の前処理として、CSVデータを集約します：**
+
+#### 集約キー
+以下のフィールドが同一のレコードを1つに統合：
+- `service` (サービス名)
+- `lineitem_resourceid` (リソースID)
+- `product_instancetype` (インスタンスタイプ)
+- `lineitem_operation` (課金操作)
+- `product_region` (リージョン)
+- `pricing_publicondemandrate` (オンデマンド単価)
+
+#### 集約対象外フィールド
+以下のフィールドは**集約キーから除外**され、値を合算：
+- ❌ `lineitem_lineitemtype` (詳細種別: Usage/DiscountedUsage等) → 空文字列に統一
+- ❌ `lineitem_unblendedrate` (混合単価) → 集約後は元データから現在コストを計算
+- ✅ `ondemand_risk_cost` → **合算**
+- ✅ `usage_amount` → **合算**
+
+#### 集約の目的
+- **Usage** と **DiscountedUsage** など、同じリソースで異なる詳細種別のレコードを統合
+- コミットメントコスト計算時の重複を排除
+- 現在の総コストは元データから正確に計算（`SavingsPlanCoveredUsage`を除外）
+
+**集約例**:
+```
+元データ (2レコード):
+- Record1: Usage, ondemand_risk_cost=3309.312, usage_amount=372
+- Record2: DiscountedUsage, ondemand_risk_cost=3309.312, usage_amount=372
+
+集約後 (1レコード):
+- lineitem_lineitemtype: "" (空)
+- ondemand_risk_cost: 6618.624 (合算)
+- usage_amount: 744 (合算)
+```
+
 ### コミットメントコストの算出
 
-1. **RI検索**: サービス、インスタンスタイプ、リージョン、課金詳細から最適なRI割引を検索
-2. **SP検索**: サービス、リージョンから最適なSP割引を検索
-3. **優先順位**:
-   - 3年NoUpfront契約を最優先
-   - 3年NoUpfrontが存在しない場合、**1年NoUpfrontにフォールバック**
-   - NoUpfront > PartialUpfront > AllUpfront の順で優先
-   - 同じ契約年数と支払い方法の場合は最安単価を選択
-   - 予約サービスが存在しない場合はオンデマンドコストをそのまま使用
+#### 1. RI検索と優先順位
+サービス、インスタンスタイプ、リージョン、課金詳細から最適なRI割引を検索：
 
-4. **フォールバックロジック**:
-   - 3年NoUpfrontが見つからない → 1年NoUpfrontを使用
-   - 1年NoUpfrontも見つからない → 通常の優先順位（3年PartialUpfront等）を適用
-   - フォールバック時は開発モードでログ出力: `⚠️ Fallback: 3-year NoUpfront not found, using 1-year NoUpfront`
+**30日保証プラン（保険料50%）**:
+- 最優先: **3年 NoUpfront** 契約
+- フォールバック: 1年 NoUpfront（3年が見つからない場合）
+- 最終候補: 通常の優先順位（3年 PartialUpfront 等）
 
-5. **DedicatedUsageの考慮**:
-   - `lineitem_usagetype` に "Dedicated" が含まれている場合、Dedicated Host/Tenancy の価格を取得
-   - Dedicated の RI 単価は Shared よりも高額
-   - AWS Price List API で Tenancy=Dedicated でフィルタリング
-   - 例: `DedicatedUsage:m5.large` → Dedicated Host の RI 価格を検索
+**1年保証プラン（保険料30%）**:
+- 最優先: **3年 PartialUpfront** 契約
+- フォールバック: 通常の優先順位
+- 初期費用（Upfront Fee）を含む計算
 
-#### RDSの特別な計算ルール
+#### 2. SP検索
+サービス、リージョンから最適なSP割引を検索：
+- Compute Savings Plansの標準割引率を適用
+- インスタンスタイプ不問
+
+#### 3. 初期費用（Upfront Fee）の取り扱い
+
+**AWS Price List APIから取得**:
+- `priceDimensions`の`unit`で判定：
+  - `unit: "Hrs"` → 時間単価（hourly rate）
+  - `unit: "Quantity"` → 初期費用（upfront fee）
+
+**初期費用の調整**:
+- Multi-AZの場合: `upfront_fee × 2`
+- Node数考慮: `upfront_fee × nodeCount × (MultiAZ ? 2 : 1)`
+
+**月額初期費用の計算**:
+```
+契約期間 = LeaseContractLength から判定（1年 or 3年）
+月額初期費用 = 初期費用 / (契約期間 × 12ヶ月)
+
+例: 3年 PartialUpfront、初期費用 $54,720
+→ 月額初期費用 = $54,720 / 36 = $1,520
+```
+
+**最終支払額への組み込み**:
+```
+最終支払額 = コミットメントコスト + 月額初期費用 + 保険料
+```
+
+#### 4. DedicatedUsageの考慮
+- `lineitem_usagetype` に "Dedicated" が含まれる場合、Dedicated Host/Tenancy の価格を取得
+- Dedicated の RI 単価は Shared よりも高額
+- AWS Price List API で Tenancy=Dedicated でフィルタリング
+
+### RDSの特別な計算ルール
 
 RDS（Amazon Relational Database Service）の場合、以下の要素を考慮します：
 
-- **Node数の計算**: `Node数 = 利用額 / (オンデマンド単価 × 利用量)`
-- **MultiAZ判定**: `lineitem_usagetype` に "Multi-AZ" が含まれている場合、MultiAZと判定
-- **コミットメントコストの計算**:
-  ```
-  調整後単価 = RI単価 × Node数
-  
-  MultiAZの場合:
-    調整後単価 = 調整後単価 × 2（プライマリ + スタンバイ）
-  
-  コミットメントコスト = 利用量 × 調整後単価
-  ```
+#### Node数の計算
+```
+Node数 = ondemand_risk_cost / (pricing_publicondemandrate × usage_amount)
+```
 
-**計算例**:
-- RI単価: $0.372/時間
+#### MultiAZ判定
+`lineitem_usagetype` に "Multi-AZ" が含まれている場合、MultiAZと判定
+
+#### コミットメントコストの計算
+```
+調整後単価 = RI単価 × Node数
+
+MultiAZの場合:
+  調整後単価 = 調整後単価 × 2（プライマリ + スタンバイ）
+
+コミットメントコスト = usage_amount × 調整後単価
+```
+
+#### 初期費用の調整（RDS Multi-AZ）
+```
+調整済み初期費用 = 基本初期費用 × nodeCount × (MultiAZ ? 2 : 1)
+
+例: db.r5.4xlarge、3年 PartialUpfront、Multi-AZ、2ノード
+- 基本初期費用: $27,360
+- 調整済み初期費用: $27,360 × 2 × 2 = $109,440
+- 月額初期費用: $109,440 / 36 = $3,040
+```
+
+**計算例（RDS Multi-AZ）**:
+- RI単価: $1.042/時間
 - Node数: 2
 - MultiAZ: Yes
 - 利用量: 744時間
-- **コミットメントコスト**: 744 × ($0.372 × 2 × 2) = **$1,107.072**
+- 初期費用: $27,360（基本）→ $54,720（Multi-AZ調整）
+- **コミットメントコスト**: 744 × ($1.042 × 2 × 2) = **$3,100.992**
+- **月額初期費用**: $54,720 / 36 = **$1,520**
+- **最終支払額**: $3,100.992 + $1,520 + 保険料
 
 ### コスト削減額と返金額
 
 ```
-適用オンデマンド = オンデマンドコスト × 適用率
+適用オンデマンド = ondemand_risk_cost × 適用率
+
 コスト削減額 = max(0, 適用オンデマンド - コミットメントコスト)
-返金額 = オンデマンドコストとコミットメントコストが同額の場合は0、
-        それ以外は max(0, コミットメントコスト - 適用オンデマンド)
+
+返金額 = ondemand_risk_cost === コミットメントコスト ? 0 :
+        max(0, コミットメントコスト - 適用オンデマンド)
 ```
 
 ### 保険料と最終支払額
 
+#### 30日保証プラン（保険料50%）
 ```
-保険料(30日) = コスト削減額 × 50% （コスト削減額が0以下の場合は0）
-保険料(1年) = コスト削減額 × 30% （コスト削減額が0以下の場合は0）
-最終支払額 = コミットメントコスト + 保険料
+コミットメントコスト = 3年 NoUpfront の時間単価で計算
+月額初期費用 = 0（NoUpfront のため）
+保険料 = コスト削減額 × 50%
+最終支払額 = コミットメントコスト + 月額初期費用 + 保険料
 ```
+
+#### 1年保証プラン（保険料30%）
+```
+コミットメントコスト = 3年 PartialUpfront の時間単価で計算
+月額初期費用 = 初期費用 / 36ヶ月
+保険料 = コスト削減額 × 30%
+最終支払額 = コミットメントコスト + 月額初期費用 + 保険料
+```
+
+**注意**: コスト削減額が0以下の場合、保険料は0
 
 ### 実効割引率
 
 ```
-実効割引率 = (オンデマンドコスト - 最終支払額) / オンデマンドコスト × 100
+実効割引率 = (ondemand_risk_cost - 最終支払額) / ondemand_risk_cost × 100
+
+※ ondemand_risk_cost が 0 の場合は 0% と表示
 ```
+
+### 計算結果の構造
+
+各レコードについて、以下を返却：
+
+#### RI（Reserved Instance）
+- `ri_discount_30d`: 30日保証用のRI契約情報（3年 NoUpfront）
+- `ri_discount_1y`: 1年保証用のRI契約情報（3年 PartialUpfront）
+- `ri_commitment_cost_30d`: 30日保証のコミットメントコスト
+- `ri_commitment_cost_1y`: 1年保証のコミットメントコスト
+- `ri_upfront_fee_30d`: 30日保証の初期費用（通常0）
+- `ri_upfront_fee_1y`: 1年保証の初期費用（調整済み）
+- `ri_cost_reduction_30d`, `ri_cost_reduction_1y`: コスト削減額
+- `ri_refund_30d`, `ri_refund_1y`: 返金額
+- `ri_insurance_30d`, `ri_insurance_1y`: 保険料
+- `ri_final_payment_30d`, `ri_final_payment_1y`: 最終支払額
+- `ri_effective_discount_rate_30d`, `ri_effective_discount_rate_1y`: 実効割引率
+
+#### SP（Savings Plans）
+- `sp_discount`: SP契約情報
+- `sp_commitment_cost`: コミットメントコスト
+- `sp_upfront_fee`: 初期費用（SPは通常0）
+- `sp_cost_reduction`, `sp_refund`, `sp_insurance_30d`, `sp_insurance_1y`, etc.
+
+### 集約結果（AggregatedResult）
+
+全レコードを集計し、以下を算出：
+- `total_ondemand_cost`: 総オンデマンドコスト（集約後の合計）
+- `total_current_cost`: 現在の総コスト（元データから計算、`SavingsPlanCoveredUsage`除外）
+- `ri_total_commitment_cost_30d`, `ri_total_commitment_cost_1y`: RI総コミットメント
+- `ri_total_upfront_fee_30d`, `ri_total_upfront_fee_1y`: RI総初期費用
+- `ri_total_final_payment_30d`, `ri_total_final_payment_1y`: RI総最終支払額
+- `ri_average_effective_discount_rate_30d`, `ri_average_effective_discount_rate_1y`: RI平均実効割引率
+- SP、Mix（RI+SP）についても同様
 
 ## 🛠️ 技術スタック
 
