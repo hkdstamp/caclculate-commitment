@@ -48,8 +48,8 @@ export interface CommitmentCostResult {
   ri_refund: number; // 30日保証の返金額（後方互換性のため残す）
   ri_refund_30d: number; // 30日保証の返金額
   ri_refund_1y: number; // 1年保証の返金額
-  ri_insurance_30d: number; // 30日保証保険料
-  ri_insurance_1y: number; // 1年保証保険料
+  ri_insurance_30d: number; // 30日コミットメント保証リスクプレミアム料
+  ri_insurance_1y: number; // 1年コミットメント保証リスクプレミアム料
   ri_final_payment_30d: number; // 30日保証の最終支払額
   ri_final_payment_1y: number; // 1年保証の最終支払額
   ri_effective_discount_rate_30d: number; // 30日保証の実効割引率
@@ -74,8 +74,8 @@ export interface CommitmentCostResult {
 export interface CalculationParams {
   ri_applied_rate: number; // RI適用率 0-1
   sp_applied_rate: number; // SP適用率 0-1
-  insurance_rate_30d: number; // 30日保証の保険料率 (デフォルト 0.5)
-  insurance_rate_1y: number; // 1年保証の保険料率 (デフォルト 0.3)
+  insurance_rate_30d: number; // 30日コミットメント保証のリスクプレミアム料率 (デフォルト 0.5)
+  insurance_rate_1y: number; // 1年コミットメント保証のリスクプレミアム料率 (デフォルト 0.3)
   reservation_type?: 'RI' | 'SP' | 'Mix'; // 予約タイプ（デフォルト: Mix）
 }
 

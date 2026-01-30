@@ -143,7 +143,7 @@ export async function calculateCommitmentCost(
   let riDiscount1y: ReservationDiscount | undefined;
 
   if (isRDSService(costData.service)) {
-    // RDSの場合、保険タイプごとに異なる契約条件で検索
+    // RDSの場合、コミットメント保証タイプごとに異なる契約条件で検索
     riDiscount30d = await findRDSReservationDiscount(
       costData.service,
       costData.product_region,
@@ -295,7 +295,7 @@ export async function calculateCommitmentCost(
   // オンデマンドコストとコミットメントコストが同額の場合、返金は0
   const spRefund = spCommitmentCost === ondemandCost ? 0 : Math.max(0, spCommitmentCost - spAppliedOndemand);
 
-  // 保険料 = コスト削減額 × 保険料率（コスト削減額が0以下の場合は保険料も0）
+  // リスクプレミアム料 = コスト削減額 × リスクプレミアム料率（コスト削減額が0以下の場合はリスクプレミアム料も0）
   const spInsurance30d = spCostReduction > 0 ? spCostReduction * params.insurance_rate_30d : 0;
   const spInsurance1y = spCostReduction > 0 ? spCostReduction * params.insurance_rate_1y : 0;
 

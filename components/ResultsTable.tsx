@@ -46,7 +46,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
       '適用率',
       'コスト削減額',
       '返金額',
-      '保険料',
+      'リスクプレミアム料',
       '最終支払額',
       '実効割引率',
     ];
@@ -164,15 +164,15 @@ export default function ResultsTable({ results }: ResultsTableProps) {
 
           <div>
             <label className="text-sm font-medium text-gray-700 mr-2">
-              保険プラン:
+              コミットメント保証プラン:
             </label>
             <select
               value={insuranceType}
               onChange={(e) => setInsuranceType(e.target.value as '30d' | '1y')}
               className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
-              <option value="30d">30日保証 (50%)</option>
-              <option value="1y">1年保証 (30%)</option>
+              <option value="30d">30日コミットメント保証 (50%)</option>
+              <option value="1y">1年コミットメント保証 (30%)</option>
             </select>
           </div>
         </div>
@@ -235,7 +235,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                 返金額
               </th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                保険料
+                リスクプレミアム料
               </th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 最終支払額
