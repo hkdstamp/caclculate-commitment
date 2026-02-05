@@ -21,16 +21,22 @@ function isRDSMultiAZ(lineitemUsageType: string): boolean {
 /**
  * RDSのNode数を計算
  * Node数 = 利用額 / (オンデマンド単価 × 利用量)
+ * 注意: Multi-AZの場合、オンデマンド単価は既に2倍になっているので、
+ *      Single-AZ換算の単価で計算する必要がある
  */
 function calculateRDSNodeCount(
   ondemandCost: number,
   publicOndemandRate: number,
-  usageAmount: number
+  usageAmount: number,
+  isMultiAZ: boolean
 ): number {
   if (publicOndemandRate === 0 || usageAmount === 0) {
     return 1; // デフォルトは1ノード
   }
-  const calculatedNodes = ondemandCost / (publicOndemandRate * usageAmount);
+  
+  // Multi-AZの場合、Single-AZ換算の単価に戻してからNode数を計算
+  const singleAZRate = isMultiAZ ? publicOndemandRate / 2 : publicOndemandRate;
+  const calculatedNodes = ondemandCost / (singleAZRate * usageAmount);
   return Math.max(1, Math.round(calculatedNodes)); // 最小1ノード、四捨五入
 }
 
@@ -217,7 +223,8 @@ export async function calculateCommitmentCost(
       const nodeCount = calculateRDSNodeCount(
         ondemandCost,
         costData.pricing_publicondemandrate,
-        usageAmount
+        usageAmount,
+        isMultiAZ
       );
       
       // RDS RI単価をNode数で調整
