@@ -228,21 +228,15 @@ export async function calculateCommitmentCost(
       );
       
       // RDS RI単価をNode数で調整
+      // 注意: Multi-AZの場合、nodeCountは既に2を含んでいる（プライマリ + スタンバイ）
       let adjustedUnitPrice = discount.unit_price * nodeCount;
-      
-      // MultiAZの場合、さらに2倍（プライマリ + スタンバイ）
-      if (isMultiAZ) {
-        adjustedUnitPrice *= 2;
-      }
       
       commitmentCost = usageAmount * adjustedUnitPrice;
 
       // 初期費用の計算（PartialUpfront/AllUpfrontの場合）
+      // 注意: Multi-AZの場合、nodeCountは既に2を含んでいる
       if (discount.upfront_fee && discount.upfront_fee > 0) {
         upfrontFee = discount.upfront_fee * nodeCount;
-        if (isMultiAZ) {
-          upfrontFee *= 2;
-        }
       }
       
       // デバッグログ（開発時のみ）
