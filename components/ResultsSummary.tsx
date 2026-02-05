@@ -92,9 +92,9 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                 </p>
               </div>
               
-              {/* 最終支払額 - 強調表示 */}
+              {/* 総額コスト（償却含む） - 強調表示 */}
               <div className="bg-purple-50 rounded-lg p-3 mb-3">
-                <p className="text-xs text-purple-700 mb-1">最終支払額</p>
+                <p className="text-xs text-purple-700 mb-1">総額コスト（償却含む）</p>
                 <p className="text-xl font-bold text-purple-900">
                   {formatCurrency(results.mix_total_final_payment_30d)}
                 </p>
@@ -136,9 +136,9 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                 </p>
               </div>
               
-              {/* 最終支払額 - 強調表示 */}
+              {/* 総額コスト（償却含む） - 強調表示 */}
               <div className="bg-purple-50 rounded-lg p-3 mb-3">
-                <p className="text-xs text-purple-700 mb-1">最終支払額</p>
+                <p className="text-xs text-purple-700 mb-1">総額コスト（償却含む）</p>
                 <p className="text-xl font-bold text-purple-900">
                   {formatCurrency(results.mix_total_final_payment_1y)}
                 </p>
@@ -191,9 +191,9 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                 </p>
               </div>
               
-              {/* 最終支払額 - 強調表示 */}
+              {/* 総額コスト（償却含む） - 強調表示 */}
               <div className="bg-blue-50 rounded-lg p-3 mb-3">
-                <p className="text-xs text-blue-700 mb-1">最終支払額</p>
+                <p className="text-xs text-blue-700 mb-1">総額コスト（償却含む）</p>
                 <p className="text-xl font-bold text-blue-900">
                   {formatCurrency(results.ri_total_final_payment_30d)}
                 </p>
@@ -235,9 +235,9 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                 </p>
               </div>
               
-              {/* 最終支払額 - 強調表示 */}
+              {/* 総額コスト（償却含む） - 強調表示 */}
               <div className="bg-blue-50 rounded-lg p-3 mb-3">
-                <p className="text-xs text-blue-700 mb-1">最終支払額</p>
+                <p className="text-xs text-blue-700 mb-1">総額コスト（償却含む）</p>
                 <p className="text-xl font-bold text-blue-900">
                   {formatCurrency(results.ri_total_final_payment_1y)}
                 </p>
@@ -290,9 +290,9 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                 </p>
               </div>
               
-              {/* 最終支払額 - 強調表示 */}
+              {/* 総額コスト（償却含む） - 強調表示 */}
               <div className="bg-green-50 rounded-lg p-3 mb-3">
-                <p className="text-xs text-green-700 mb-1">最終支払額</p>
+                <p className="text-xs text-green-700 mb-1">総額コスト（償却含む）</p>
                 <p className="text-xl font-bold text-green-900">
                   {formatCurrency(results.sp_total_final_payment_30d)}
                 </p>
@@ -334,9 +334,9 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                 </p>
               </div>
               
-              {/* 最終支払額 - 強調表示 */}
+              {/* 総額コスト（償却含む） - 強調表示 */}
               <div className="bg-green-50 rounded-lg p-3 mb-3">
-                <p className="text-xs text-green-700 mb-1">最終支払額</p>
+                <p className="text-xs text-green-700 mb-1">総額コスト（償却含む）</p>
                 <p className="text-xl font-bold text-green-900">
                   {formatCurrency(results.sp_total_final_payment_1y)}
                 </p>

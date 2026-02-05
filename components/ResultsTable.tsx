@@ -46,7 +46,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
       '適用率',
       'コスト削減額',
       '返金額',
-      '月額初期費用',
+      '償却費用',
       'リスクプレミアム料',
       '最終支払額',
       '実効割引率',
@@ -239,7 +239,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                 返金額
               </th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                月額初期費用
+                償却費用
               </th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 リスクプレミアム料
