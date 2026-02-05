@@ -253,8 +253,9 @@ export async function calculateCommitmentCost(
   // リスクプレミアム料 = コスト削減額 × 料率
   const riInsurance30d = riCostReduction30d > 0 ? riCostReduction30d * params.insurance_rate_30d : 0;
   const riFinalPayment30d = riCommitmentWithDepreciation30d + riInsurance30d;
-  const riEffectiveDiscountRate30d = ondemandCost > 0
-    ? ((ondemandCost - riFinalPayment30d) / ondemandCost) * 100
+  // 実効割引率 = 1 - (月間総コスト / (オンデマンドコスト × 適用率))
+  const riEffectiveDiscountRate30d = riAppliedOndemand > 0
+    ? Math.max(0, (1 - riFinalPayment30d / riAppliedOndemand) * 100)
     : 0;
 
   // 1年保証の計算（償却費用を含めたコミットメント額で計算）
@@ -264,8 +265,9 @@ export async function calculateCommitmentCost(
   // リスクプレミアム料 = コスト削減額 × 料率
   const riInsurance1y = riCostReduction1y > 0 ? riCostReduction1y * params.insurance_rate_1y : 0;
   const riFinalPayment1y = riCommitmentWithDepreciation1y + riInsurance1y;
-  const riEffectiveDiscountRate1y = ondemandCost > 0
-    ? ((ondemandCost - riFinalPayment1y) / ondemandCost) * 100
+  // 実効割引率 = 1 - (月間総コスト / (オンデマンドコスト × 適用率))
+  const riEffectiveDiscountRate1y = riAppliedOndemand > 0
+    ? Math.max(0, (1 - riFinalPayment1y / riAppliedOndemand) * 100)
     : 0;
 
   // SP計算
@@ -287,14 +289,13 @@ export async function calculateCommitmentCost(
   const spFinalPayment30d = spCommitmentCost + spInsurance30d;
   const spFinalPayment1y = spCommitmentCost + spInsurance1y;
 
-  const spEffectiveDiscountRate30d =
-    ondemandCost > 0
-      ? ((ondemandCost - spFinalPayment30d) / ondemandCost) * 100
-      : 0;
-  const spEffectiveDiscountRate1y =
-    ondemandCost > 0
-      ? ((ondemandCost - spFinalPayment1y) / ondemandCost) * 100
-      : 0;
+  // 実効割引率 = 1 - (月間総コスト / (オンデマンドコスト × 適用率))
+  const spEffectiveDiscountRate30d = spAppliedOndemand > 0
+    ? Math.max(0, (1 - spFinalPayment30d / spAppliedOndemand) * 100)
+    : 0;
+  const spEffectiveDiscountRate1y = spAppliedOndemand > 0
+    ? Math.max(0, (1 - spFinalPayment1y / spAppliedOndemand) * 100)
+    : 0;
 
   // デバッグログ（開発時のみ）
   if (process.env.NODE_ENV === 'development' && isRDSService(costData.service)) {
