@@ -356,6 +356,9 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                     {formatCurrency(refund)}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-right text-gray-700">
+                    {formatCurrency(monthlyUpfront)}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-right text-gray-700">
                     {formatCurrency(insurance)}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-right font-bold text-gray-900">
