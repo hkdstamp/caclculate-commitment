@@ -24,6 +24,20 @@ export default function ResultsTable({ results }: ResultsTableProps) {
     return `${value.toFixed(3)}%`;
   };
 
+  // オプション情報を構築する関数
+  const buildOptionInfo = (costData: any) => {
+    const parts: string[] = [];
+    if (costData.product_operatingsystem) parts.push(`OS: ${costData.product_operatingsystem}`);
+    if (costData.product_tenancy) parts.push(`テナンシー: ${costData.product_tenancy}`);
+    if (costData.product_databaseedition) parts.push(`DBエディション: ${costData.product_databaseedition}`);
+    if (costData.product_databaseengine) parts.push(`DB種類: ${costData.product_databaseengine}`);
+    if (costData.product_deploymentoption) parts.push(`Deployオプション: ${costData.product_deploymentoption}`);
+    if (costData.product_licensemodel) parts.push(`ライセンスモデル: ${costData.product_licensemodel}`);
+    if (costData.product_license) parts.push(`ライセンス種別: ${costData.product_license}`);
+    if (costData.product_memory) parts.push(`メモリ: ${costData.product_memory}`);
+    return parts.join(', ') || '-';
+  };
+
   const downloadCSV = () => {
     const isRI = reservationType === 'RI';
     const isSP = reservationType === 'SP';
@@ -34,6 +48,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
     const headers = [
       'サービス',
       'リソースID',
+      'オプション情報',
       'リージョン',
       'インスタンスタイプ',
       ...(isMix ? ['種別'] : []), // Mixの場合のみ種別列を追加
@@ -99,6 +114,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
       return [
         detail.costData.service,
         detail.costData.lineitem_resourceid || '-',
+        buildOptionInfo(detail.costData),
         detail.costData.product_region,
         detail.costData.product_instancetype || '-',
         ...(isMix ? [detail.sp_discount ? 'SP' : 'RI'] : []), // Mixの場合のみ種別を追加
@@ -199,6 +215,9 @@ export default function ResultsTable({ results }: ResultsTableProps) {
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 リソースID
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                オプション情報
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 リージョン
@@ -308,6 +327,9 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-gray-700 text-xs">
                     {detail.costData.lineitem_resourceid || '-'}
+                  </td>
+                  <td className="px-4 py-3 text-gray-700 text-xs max-w-xs overflow-hidden text-ellipsis">
+                    {buildOptionInfo(detail.costData)}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-gray-700">
                     {detail.costData.product_region}
