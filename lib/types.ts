@@ -10,6 +10,16 @@ export interface AWSCostData {
   lineitem_lineitemtype: string;
   pricing_publicondemandrate: number;
   lineitem_unblendedrate: number;
+  // 新規追加フィールド
+  product_operatingsystem?: string; // OS
+  product_tenancy?: string; // テナンシー
+  product_databaseedition?: string; // DBエディッション
+  product_databaseengine?: string; // DB種類
+  product_deploymentoption?: string; // Deployオプション
+  product_licensemodel?: string; // ライセンス
+  product_license?: string; // ライセンス種別
+  product_memory?: string; // メモリ
+  lineitem_unblendedcost?: number; // 混合コスト
   ondemand_risk_cost: number;
   usage_amount: number;
 }
@@ -24,7 +34,15 @@ export interface ReservationDiscount {
   unit_price: number;
   unit_price_unit: string; // 'per hour' など
   reservation_type: 'RI' | 'SP'; // Reserved Instance or Savings Plan
+  // EC2関連
   tenancy?: 'Shared' | 'Dedicated' | 'Host'; // テナンシータイプ（オプション）
+  operating_system?: string; // OS（EC2用）
+  // RDS関連
+  database_engine?: string; // DB種類（RDS用）
+  database_edition?: string; // DBエディッション（RDS用）
+  deployment_option?: string; // Deployオプション（RDS用）
+  license_model?: string; // ライセンス（RDS用）
+  // 共通
   upfront_fee?: number; // 初期費用（PartialUpfront/AllUpfrontの場合）
 }
 

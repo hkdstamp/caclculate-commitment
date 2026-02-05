@@ -135,7 +135,8 @@ const INITIAL_RETRY_DELAY = parseInt(process.env.AWS_API_INITIAL_RETRY_DELAY || 
 async function fetchEC2RIPricing(
   instanceType: string,
   region: string,
-  tenancy: 'Shared' | 'Dedicated' | 'Host' = 'Shared'
+  tenancy: 'Shared' | 'Dedicated' | 'Host' = 'Shared',
+  operatingSystem: string = 'Linux'
 ): Promise<ReservationDiscount[]> {
   const client = getPricingClient();
   if (!client) return [];
@@ -167,7 +168,7 @@ async function fetchEC2RIPricing(
           {
             Type: 'TERM_MATCH',
             Field: 'operatingSystem',
-            Value: 'Linux',
+            Value: operatingSystem, // パラメータから設定
           },
           {
             Type: 'TERM_MATCH',
@@ -231,6 +232,7 @@ async function fetchEC2RIPricing(
                     unit_price_unit: 'per hour',
                     reservation_type: 'RI',
                     tenancy,
+                    operating_system: operatingSystem,
                     upfront_fee: upfrontFee > 0 ? upfrontFee : undefined,
                   });
                 }
@@ -252,7 +254,11 @@ async function fetchEC2RIPricing(
  */
 async function fetchRDSRIPricing(
   instanceType: string,
-  region: string
+  region: string,
+  databaseEngine?: string,
+  databaseEdition?: string,
+  deploymentOption?: string,
+  licenseModel?: string
 ): Promise<ReservationDiscount[]> {
   const client = getPricingClient();
   if (!client) return [];
@@ -262,25 +268,62 @@ async function fetchRDSRIPricing(
 
   try {
     for (const paymentOption of ['No Upfront', 'Partial Upfront', 'All Upfront']) {
+      // 基本フィルター
+      const filters: any[] = [
+        {
+          Type: 'TERM_MATCH',
+          Field: 'instanceType',
+          Value: instanceType,
+        },
+        {
+          Type: 'TERM_MATCH',
+          Field: 'location',
+          Value: regionDescription,
+        },
+      ];
+
+      // RDS固有の属性を追加
+      if (databaseEngine && databaseEngine !== 'Any') {
+        filters.push({
+          Type: 'TERM_MATCH',
+          Field: 'databaseEngine',
+          Value: databaseEngine,
+        });
+      } else {
+        filters.push({
+          Type: 'TERM_MATCH',
+          Field: 'databaseEngine',
+          Value: 'Any',
+        });
+      }
+
+      if (databaseEdition) {
+        filters.push({
+          Type: 'TERM_MATCH',
+          Field: 'databaseEdition',
+          Value: databaseEdition,
+        });
+      }
+
+      if (deploymentOption) {
+        filters.push({
+          Type: 'TERM_MATCH',
+          Field: 'deploymentOption',
+          Value: deploymentOption,
+        });
+      }
+
+      if (licenseModel) {
+        filters.push({
+          Type: 'TERM_MATCH',
+          Field: 'licenseModel',
+          Value: licenseModel,
+        });
+      }
+
       const input: GetProductsCommandInput = {
         ServiceCode: 'AmazonRDS',
-        Filters: [
-          {
-            Type: 'TERM_MATCH',
-            Field: 'instanceType',
-            Value: instanceType,
-          },
-          {
-            Type: 'TERM_MATCH',
-            Field: 'location',
-            Value: regionDescription,
-          },
-          {
-            Type: 'TERM_MATCH',
-            Field: 'databaseEngine',
-            Value: 'Any',
-          },
-        ],
+        Filters: filters,
         MaxResults: 100,
       };
 
@@ -335,6 +378,10 @@ async function fetchRDSRIPricing(
                     unit_price: hourlyRate,
                     unit_price_unit: 'per hour',
                     reservation_type: 'RI',
+                    database_engine: databaseEngine,
+                    database_edition: databaseEdition,
+                    deployment_option: deploymentOption,
+                    license_model: licenseModel,
                     upfront_fee: upfrontFee > 0 ? upfrontFee : undefined,
                   });
                 }
@@ -431,7 +478,12 @@ export async function fetchPricingFromAWS(
   instanceType: string | undefined,
   region: string,
   reservationType: 'RI' | 'SP',
-  tenancy: 'Shared' | 'Dedicated' | 'Host' = 'Shared'
+  tenancy: 'Shared' | 'Dedicated' | 'Host' = 'Shared',
+  operatingSystem?: string,
+  databaseEngine?: string,
+  databaseEdition?: string,
+  deploymentOption?: string,
+  licenseModel?: string
 ): Promise<ReservationDiscount[]> {
   const serviceCode = getServiceCode(service);
 
@@ -448,9 +500,9 @@ export async function fetchPricingFromAWS(
   if (!instanceType) return [];
 
   if (serviceCode === 'AmazonEC2') {
-    return await fetchEC2RIPricing(instanceType, region, tenancy);
+    return await fetchEC2RIPricing(instanceType, region, tenancy, operatingSystem);
   } else if (serviceCode === 'AmazonRDS') {
-    return await fetchRDSRIPricing(instanceType, region);
+    return await fetchRDSRIPricing(instanceType, region, databaseEngine, databaseEdition, deploymentOption, licenseModel);
   }
 
   return [];

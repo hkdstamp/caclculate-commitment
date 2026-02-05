@@ -61,14 +61,23 @@ async function findRDSReservationDiscount(
   region: string,
   instanceType: string,
   tenancy: 'Shared' | 'Dedicated' | 'Host',
-  insuranceType: '30d' | '1y'
+  insuranceType: '30d' | '1y',
+  databaseEngine?: string,
+  databaseEdition?: string,
+  deploymentOption?: string,
+  licenseModel?: string
 ): Promise<ReservationDiscount | undefined> {
   const allDiscounts = await findReservationDiscounts(
     service,
     region,
     instanceType,
     'RI',
-    tenancy
+    tenancy,
+    undefined, // operatingSystem (EC2のみ)
+    databaseEngine,
+    databaseEdition,
+    deploymentOption,
+    licenseModel
   );
 
   if (process.env.NODE_ENV === 'development') {
@@ -149,14 +158,22 @@ export async function calculateCommitmentCost(
       costData.product_region,
       costData.product_instancetype,
       tenancy,
-      '30d'
+      '30d',
+      costData.product_databaseengine,
+      costData.product_databaseedition,
+      costData.product_deploymentoption,
+      costData.product_licensemodel
     );
     riDiscount1y = await findRDSReservationDiscount(
       costData.service,
       costData.product_region,
       costData.product_instancetype,
       tenancy,
-      '1y'
+      '1y',
+      costData.product_databaseengine,
+      costData.product_databaseedition,
+      costData.product_deploymentoption,
+      costData.product_licensemodel
     );
   } else {
     // RDS以外は通常の検索
@@ -165,7 +182,8 @@ export async function calculateCommitmentCost(
       costData.product_region,
       costData.product_instancetype,
       'RI',
-      tenancy
+      tenancy,
+      costData.product_operatingsystem // EC2の場合、OS情報を渡す
     );
     const riDiscount = getBestReservationDiscount(riDiscounts);
     riDiscount30d = riDiscount;

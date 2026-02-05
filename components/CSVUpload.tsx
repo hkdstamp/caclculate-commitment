@@ -43,6 +43,16 @@ export default function CSVUpload({ onDataLoaded }: CSVUploadProps) {
               lineitem_lineitemtype: row.lineitem_lineitemtype || '',
               pricing_publicondemandrate: parseFloat(row.pricing_publicondemandrate || '0'),
               lineitem_unblendedrate: parseFloat(row.lineitem_unblendedrate || '0'),
+              // 新規フィールド
+              product_operatingsystem: row.product_operatingsystem || undefined,
+              product_tenancy: row.product_tenancy || undefined,
+              product_databaseedition: row.product_databaseedition || undefined,
+              product_databaseengine: row.product_databaseengine || undefined,
+              product_deploymentoption: row.product_deploymentoption || undefined,
+              product_licensemodel: row.product_licensemodel || undefined,
+              product_license: row.product_license || undefined,
+              product_memory: row.product_memory || undefined,
+              lineitem_unblendedcost: row.lineitem_unblendedcost ? parseFloat(row.lineitem_unblendedcost) : undefined,
               ondemand_risk_cost: parseFloat(row.ondemand_risk_cost || '0'),
               usage_amount: parseFloat(row.usage_amount || '0'),
             };
@@ -119,6 +129,15 @@ export default function CSVUpload({ onDataLoaded }: CSVUploadProps) {
           <p>• lineitem_lineitemtype: 課金種別</p>
           <p>• pricing_publicondemandrate: オンデマンド単価</p>
           <p>• lineitem_unblendedrate: 混合単価</p>
+          <p>• product_operatingsystem: OS</p>
+          <p>• product_tenancy: テナンシー</p>
+          <p>• product_databaseedition: DBエディション</p>
+          <p>• product_databaseengine: DB種類</p>
+          <p>• product_deploymentoption: Deployオプション</p>
+          <p>• product_licensemodel: ライセンスモデル</p>
+          <p>• product_license: ライセンス種別</p>
+          <p>• product_memory: メモリ</p>
+          <p>• lineitem_unblendedcost: 混合コスト</p>
           <p>• ondemand_risk_cost: オンデマンドコスト</p>
           <p>• usage_amount: 利用量（時間、または、実行数）</p>
         </div>

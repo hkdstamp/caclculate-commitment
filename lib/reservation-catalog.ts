@@ -1042,7 +1042,12 @@ export async function findReservationDiscounts(
   region: string,
   instanceType?: string,
   reservationType?: 'RI' | 'SP',
-  tenancy?: 'Shared' | 'Dedicated' | 'Host'
+  tenancy?: 'Shared' | 'Dedicated' | 'Host',
+  operatingSystem?: string,
+  databaseEngine?: string,
+  databaseEdition?: string,
+  deploymentOption?: string,
+  licenseModel?: string
 ): Promise<ReservationDiscount[]> {
   // 静的カタログから検索
   const catalogResults = findReservationDiscountsFromCatalog(
@@ -1074,7 +1079,18 @@ export async function findReservationDiscounts(
 
       // AWS APIから取得
       console.log(`Fetching ${reservationType} pricing from AWS API for`, cacheKey);
-      const apiResults = await fetchPricingFromAWS(service, instanceType, region, reservationType, tenancy);
+      const apiResults = await fetchPricingFromAWS(
+        service, 
+        instanceType, 
+        region, 
+        reservationType, 
+        tenancy,
+        operatingSystem,
+        databaseEngine,
+        databaseEdition,
+        deploymentOption,
+        licenseModel
+      );
       
       if (apiResults.length > 0) {
         // キャッシュに保存
