@@ -59,6 +59,8 @@ export interface CommitmentCostResult {
   ri_commitment_cost_1y: number; // 1年保証のコミットメントコスト
   ri_upfront_fee: number; // RI初期費用（30日保証）
   ri_upfront_fee_1y: number; // RI初期費用（1年保証）
+  ri_monthly_upfront_30d: number; // RI月額初期費用（30日保証）
+  ri_monthly_upfront_1y: number; // RI月額初期費用（1年保証）
   ri_applied_rate: number; // 適用率 0-1
   ri_cost_reduction: number; // 30日保証のコスト削減額（後方互換性のため残す）
   ri_cost_reduction_30d: number; // 30日保証のコスト削減額
@@ -77,6 +79,8 @@ export interface CommitmentCostResult {
   sp_discount?: ReservationDiscount;
   sp_commitment_cost: number;
   sp_upfront_fee: number; // SP初期費用
+  sp_monthly_upfront_30d: number; // SP月額初期費用（30日保証）
+  sp_monthly_upfront_1y: number; // SP月額初期費用（1年保証）
   sp_applied_rate: number;
   sp_cost_reduction: number;
   sp_refund: number;

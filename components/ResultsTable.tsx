@@ -46,6 +46,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
       '適用率',
       'コスト削減額',
       '返金額',
+      '月額初期費用',
       'リスクプレミアム料',
       '最終支払額',
       '実効割引率',
@@ -53,7 +54,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
 
     // CSVデータ行
     const rows = results.details.map((detail) => {
-      let discount, commitmentCost, appliedRate, costReduction, refund, insurance, finalPayment, effectiveRate;
+      let discount, commitmentCost, appliedRate, costReduction, refund, monthlyUpfront, insurance, finalPayment, effectiveRate;
       
       if (isMix) {
         // Mix: SPがある場合はSP、ない場合はRI
@@ -64,6 +65,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
         appliedRate = useSP ? detail.sp_applied_rate : detail.ri_applied_rate;
         costReduction = useSP ? detail.sp_cost_reduction : (is30d ? detail.ri_cost_reduction_30d : detail.ri_cost_reduction_1y);
         refund = useSP ? detail.sp_refund : (is30d ? detail.ri_refund_30d : detail.ri_refund_1y);
+        monthlyUpfront = useSP ? detail.sp_monthly_upfront_30d : (is30d ? detail.ri_monthly_upfront_30d : detail.ri_monthly_upfront_1y);
         insurance = useSP
           ? (is30d ? detail.sp_insurance_30d : detail.sp_insurance_1y)
           : (is30d ? detail.ri_insurance_30d : detail.ri_insurance_1y);
@@ -82,6 +84,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
         appliedRate = isRI ? detail.ri_applied_rate : detail.sp_applied_rate;
         costReduction = isRI ? (is30d ? detail.ri_cost_reduction_30d : detail.ri_cost_reduction_1y) : detail.sp_cost_reduction;
         refund = isRI ? (is30d ? detail.ri_refund_30d : detail.ri_refund_1y) : detail.sp_refund;
+        monthlyUpfront = isRI ? (is30d ? detail.ri_monthly_upfront_30d : detail.ri_monthly_upfront_1y) : (is30d ? detail.sp_monthly_upfront_30d : detail.sp_monthly_upfront_1y);
         insurance = isRI
           ? (is30d ? detail.ri_insurance_30d : detail.ri_insurance_1y)
           : (is30d ? detail.sp_insurance_30d : detail.sp_insurance_1y);
@@ -108,6 +111,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
         (appliedRate * 100).toFixed(3),
         costReduction.toFixed(3),
         refund.toFixed(3),
+        monthlyUpfront.toFixed(3),
         insurance.toFixed(3),
         finalPayment.toFixed(3),
         effectiveRate.toFixed(3),
@@ -235,6 +239,9 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                 返金額
               </th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                月額初期費用
+              </th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 リスクプレミアム料
               </th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -252,7 +259,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
               const isMix = reservationType === 'Mix';
               const is30d = insuranceType === '30d';
 
-              let discount, commitmentCost, appliedRate, costReduction, refund, insurance, finalPayment, effectiveRate;
+              let discount, commitmentCost, appliedRate, costReduction, refund, monthlyUpfront, insurance, finalPayment, effectiveRate;
 
               if (isMix) {
                 // Mix: SPがある場合はSP、ない場合はRI
@@ -263,6 +270,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                 appliedRate = useSP ? detail.sp_applied_rate : detail.ri_applied_rate;
                 costReduction = useSP ? detail.sp_cost_reduction : (is30d ? detail.ri_cost_reduction_30d : detail.ri_cost_reduction_1y);
                 refund = useSP ? detail.sp_refund : (is30d ? detail.ri_refund_30d : detail.ri_refund_1y);
+                monthlyUpfront = useSP ? detail.sp_monthly_upfront_30d : (is30d ? detail.ri_monthly_upfront_30d : detail.ri_monthly_upfront_1y);
                 insurance = useSP
                   ? (is30d ? detail.sp_insurance_30d : detail.sp_insurance_1y)
                   : (is30d ? detail.ri_insurance_30d : detail.ri_insurance_1y);
@@ -281,6 +289,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                 appliedRate = isRI ? detail.ri_applied_rate : detail.sp_applied_rate;
                 costReduction = isRI ? (is30d ? detail.ri_cost_reduction_30d : detail.ri_cost_reduction_1y) : detail.sp_cost_reduction;
                 refund = isRI ? (is30d ? detail.ri_refund_30d : detail.ri_refund_1y) : detail.sp_refund;
+                monthlyUpfront = isRI ? (is30d ? detail.ri_monthly_upfront_30d : detail.ri_monthly_upfront_1y) : (is30d ? detail.sp_monthly_upfront_30d : detail.sp_monthly_upfront_1y);
                 insurance = isRI
                   ? (is30d ? detail.ri_insurance_30d : detail.ri_insurance_1y)
                   : (is30d ? detail.sp_insurance_30d : detail.sp_insurance_1y);

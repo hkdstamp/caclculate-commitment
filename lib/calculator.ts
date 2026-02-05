@@ -334,6 +334,8 @@ export async function calculateCommitmentCost(
     ri_commitment_cost_1y: riCommitmentCost1y, // 1年保証のコミットメントコスト
     ri_upfront_fee: riUpfrontFee30d, // 後方互換性のため残す
     ri_upfront_fee_1y: riUpfrontFee1y, // 1年保証の初期費用
+    ri_monthly_upfront_30d: monthlyUpfrontCost30d, // 30日保証の月額初期費用
+    ri_monthly_upfront_1y: monthlyUpfrontCost1y, // 1年保証の月額初期費用
     ri_applied_rate: params.ri_applied_rate,
     ri_cost_reduction: riCostReduction30d, // 後方互換性のため残す
     ri_cost_reduction_30d: riCostReduction30d, // 30日保証のコスト削減額
@@ -351,6 +353,8 @@ export async function calculateCommitmentCost(
     sp_discount: spDiscount,
     sp_commitment_cost: spCommitmentCost,
     sp_upfront_fee: 0, // SPには初期費用なし
+    sp_monthly_upfront_30d: 0, // SPには初期費用なし
+    sp_monthly_upfront_1y: 0, // SPには初期費用なし
     sp_applied_rate: params.sp_applied_rate,
     sp_cost_reduction: spCostReduction,
     sp_refund: spRefund,
