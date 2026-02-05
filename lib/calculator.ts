@@ -19,28 +19,6 @@ function isRDSMultiAZ(lineitemUsageType: string): boolean {
 }
 
 /**
- * RDSのNode数を計算
- * Node数 = 利用額 / (オンデマンド単価 × 利用量)
- * 注意: Multi-AZの場合、オンデマンド単価は既に2倍になっているので、
- *      Single-AZ換算の単価で計算する必要がある
- */
-function calculateRDSNodeCount(
-  ondemandCost: number,
-  publicOndemandRate: number,
-  usageAmount: number,
-  isMultiAZ: boolean
-): number {
-  if (publicOndemandRate === 0 || usageAmount === 0) {
-    return 1; // デフォルトは1ノード
-  }
-  
-  // Multi-AZの場合、Single-AZ換算の単価に戻してからNode数を計算
-  const singleAZRate = isMultiAZ ? publicOndemandRate / 2 : publicOndemandRate;
-  const calculatedNodes = ondemandCost / (singleAZRate * usageAmount);
-  return Math.max(1, Math.round(calculatedNodes)); // 最小1ノード、四捨五入
-}
-
-/**
  * サービスがRDSかどうかを判定
  */
 function isRDSService(service: string): boolean {
@@ -217,27 +195,13 @@ export async function calculateCommitmentCost(
     let commitmentCost: number;
     let upfrontFee: number = 0;
 
-    // RDSの場合、MultiAZとNode数を考慮
+    // RDSの場合、API単価は既にMulti-AZ込み（プライマリ+スタンバイ）なのでそのまま使用
     if (isRDSService(costData.service)) {
-      const isMultiAZ = isRDSMultiAZ(costData.lineitem_usagetype);
-      const nodeCount = calculateRDSNodeCount(
-        ondemandCost,
-        costData.pricing_publicondemandrate,
-        usageAmount,
-        isMultiAZ
-      );
+      // API単価をそのまま使用（Multi-AZ込みの単価）
+      commitmentCost = usageAmount * discount.unit_price;
       
-      // RDS RI単価をNode数で調整
-      // 注意: Multi-AZの場合、nodeCountは既に2を含んでいる（プライマリ + スタンバイ）
-      let adjustedUnitPrice = discount.unit_price * nodeCount;
-      
-      commitmentCost = usageAmount * adjustedUnitPrice;
-
-      // 初期費用の計算（PartialUpfront/AllUpfrontの場合）
-      // 注意: Multi-AZの場合、nodeCountは既に2を含んでいる
-      if (discount.upfront_fee && discount.upfront_fee > 0) {
-        upfrontFee = discount.upfront_fee * nodeCount;
-      }
+      // 初期費用もそのまま使用（Multi-AZ込み）
+      upfrontFee = discount.upfront_fee || 0;
       
       // デバッグログ（開発時のみ）
       if (process.env.NODE_ENV === 'development') {
@@ -246,14 +210,12 @@ export async function calculateCommitmentCost(
           instanceType: costData.product_instancetype,
           paymentMethod: discount.payment_method,
           contractYears: discount.contract_years,
-          isMultiAZ,
-          nodeCount,
-          baseUnitPrice: discount.unit_price,
-          baseUpfrontFee: discount.upfront_fee || 0,
-          adjustedUnitPrice,
-          adjustedUpfrontFee: upfrontFee,
+          isMultiAZ: isRDSMultiAZ(costData.lineitem_usagetype),
+          unitPrice: discount.unit_price,
+          upfrontFee: upfrontFee,
           usageAmount,
           commitmentCost,
+          note: 'API単価は既にMulti-AZ込み'
         });
       }
     } else {
