@@ -207,66 +207,66 @@ export default function ResultsTable({ results }: ResultsTableProps) {
 
       {/* テーブル */}
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 text-sm">
+        <table className="min-w-full divide-y divide-gray-200 text-sm table-auto">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 サービス
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap w-48">
                 リソースID
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap w-64">
                 オプション情報
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 リージョン
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 インスタンスタイプ
               </th>
               {reservationType === 'Mix' && (
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                   種別
                 </th>
               )}
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 契約年数
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 支払方法
               </th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 単価
               </th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 利用量
               </th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 オンデマンドコスト
               </th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 コミットメントコスト
               </th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 適用率
               </th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 コスト削減額
               </th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 返金額
               </th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 償却費用
               </th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 リスクプレミアム料
               </th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 最終支払額
               </th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 実効割引率
               </th>
             </tr>
@@ -325,11 +325,15 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                   <td className="px-4 py-3 whitespace-nowrap text-gray-900">
                     {detail.costData.service}
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-gray-700 text-xs">
-                    {detail.costData.lineitem_resourceid || '-'}
+                  <td className="px-4 py-3 text-gray-700 text-xs max-w-[12rem]">
+                    <div className="overflow-hidden text-ellipsis whitespace-nowrap" title={detail.costData.lineitem_resourceid || '-'}>
+                      {detail.costData.lineitem_resourceid || '-'}
+                    </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-700 text-xs max-w-xs overflow-hidden text-ellipsis">
-                    {buildOptionInfo(detail.costData)}
+                  <td className="px-4 py-3 text-gray-700 text-xs max-w-[16rem]">
+                    <div className="overflow-hidden text-ellipsis whitespace-nowrap" title={buildOptionInfo(detail.costData)}>
+                      {buildOptionInfo(detail.costData)}
+                    </div>
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-gray-700">
                     {detail.costData.product_region}
