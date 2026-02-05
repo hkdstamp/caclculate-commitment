@@ -286,6 +286,7 @@ export async function calculateCommitmentCost(
   // 30日保証の計算
   const riCostReduction30d = Math.max(0, riAppliedOndemand - riCommitmentCost30d);
   const riRefund30d = riCommitmentCost30d === ondemandCost ? 0 : Math.max(0, riCommitmentCost30d - riAppliedOndemand);
+  // リスクプレミアム料 = コスト削減額 × 料率（月額初期費用は含めない）
   const riInsurance30d = riCostReduction30d > 0 ? riCostReduction30d * params.insurance_rate_30d : 0;
   const riFinalPayment30d = riCommitmentCost30d + riInsurance30d + monthlyUpfrontCost30d;
   const riEffectiveDiscountRate30d = ondemandCost > 0
@@ -295,6 +296,7 @@ export async function calculateCommitmentCost(
   // 1年保証の計算
   const riCostReduction1y = Math.max(0, riAppliedOndemand - riCommitmentCost1y);
   const riRefund1y = riCommitmentCost1y === ondemandCost ? 0 : Math.max(0, riCommitmentCost1y - riAppliedOndemand);
+  // リスクプレミアム料 = コスト削減額 × 料率（月額初期費用は含めない）
   const riInsurance1y = riCostReduction1y > 0 ? riCostReduction1y * params.insurance_rate_1y : 0;
   const riFinalPayment1y = riCommitmentCost1y + riInsurance1y + monthlyUpfrontCost1y;
   const riEffectiveDiscountRate1y = ondemandCost > 0
