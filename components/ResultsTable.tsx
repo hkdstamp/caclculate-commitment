@@ -60,10 +60,10 @@ export default function ResultsTable({ results }: ResultsTableProps) {
         const useSP = !!detail.sp_discount;
         // RIの場合、1年保証は ri_discount_1y を、30日保証は ri_discount を使用
         discount = useSP ? detail.sp_discount : (is30d ? detail.ri_discount : detail.ri_discount_1y);
-        commitmentCost = useSP ? detail.sp_commitment_cost : detail.ri_commitment_cost;
+        commitmentCost = useSP ? detail.sp_commitment_cost : (is30d ? detail.ri_commitment_cost_30d : detail.ri_commitment_cost_1y);
         appliedRate = useSP ? detail.sp_applied_rate : detail.ri_applied_rate;
-        costReduction = useSP ? detail.sp_cost_reduction : detail.ri_cost_reduction;
-        refund = useSP ? detail.sp_refund : detail.ri_refund;
+        costReduction = useSP ? detail.sp_cost_reduction : (is30d ? detail.ri_cost_reduction_30d : detail.ri_cost_reduction_1y);
+        refund = useSP ? detail.sp_refund : (is30d ? detail.ri_refund_30d : detail.ri_refund_1y);
         insurance = useSP
           ? (is30d ? detail.sp_insurance_30d : detail.sp_insurance_1y)
           : (is30d ? detail.ri_insurance_30d : detail.ri_insurance_1y);
@@ -78,10 +78,10 @@ export default function ResultsTable({ results }: ResultsTableProps) {
         discount = isRI 
           ? (is30d ? detail.ri_discount : detail.ri_discount_1y)
           : detail.sp_discount;
-        commitmentCost = isRI ? detail.ri_commitment_cost : detail.sp_commitment_cost;
+        commitmentCost = isRI ? (is30d ? detail.ri_commitment_cost_30d : detail.ri_commitment_cost_1y) : detail.sp_commitment_cost;
         appliedRate = isRI ? detail.ri_applied_rate : detail.sp_applied_rate;
-        costReduction = isRI ? detail.ri_cost_reduction : detail.sp_cost_reduction;
-        refund = isRI ? detail.ri_refund : detail.sp_refund;
+        costReduction = isRI ? (is30d ? detail.ri_cost_reduction_30d : detail.ri_cost_reduction_1y) : detail.sp_cost_reduction;
+        refund = isRI ? (is30d ? detail.ri_refund_30d : detail.ri_refund_1y) : detail.sp_refund;
         insurance = isRI
           ? (is30d ? detail.ri_insurance_30d : detail.ri_insurance_1y)
           : (is30d ? detail.sp_insurance_30d : detail.sp_insurance_1y);
@@ -259,10 +259,10 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                 const useSP = !!detail.sp_discount;
                 // RIの場合、1年保証は ri_discount_1y を、30日保証は ri_discount を使用
                 discount = useSP ? detail.sp_discount : (is30d ? detail.ri_discount : detail.ri_discount_1y);
-                commitmentCost = useSP ? detail.sp_commitment_cost : detail.ri_commitment_cost;
+                commitmentCost = useSP ? detail.sp_commitment_cost : (is30d ? detail.ri_commitment_cost_30d : detail.ri_commitment_cost_1y);
                 appliedRate = useSP ? detail.sp_applied_rate : detail.ri_applied_rate;
-                costReduction = useSP ? detail.sp_cost_reduction : detail.ri_cost_reduction;
-                refund = useSP ? detail.sp_refund : detail.ri_refund;
+                costReduction = useSP ? detail.sp_cost_reduction : (is30d ? detail.ri_cost_reduction_30d : detail.ri_cost_reduction_1y);
+                refund = useSP ? detail.sp_refund : (is30d ? detail.ri_refund_30d : detail.ri_refund_1y);
                 insurance = useSP
                   ? (is30d ? detail.sp_insurance_30d : detail.sp_insurance_1y)
                   : (is30d ? detail.ri_insurance_30d : detail.ri_insurance_1y);
@@ -277,10 +277,10 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                 discount = isRI 
                   ? (is30d ? detail.ri_discount : detail.ri_discount_1y)
                   : detail.sp_discount;
-                commitmentCost = isRI ? detail.ri_commitment_cost : detail.sp_commitment_cost;
+                commitmentCost = isRI ? (is30d ? detail.ri_commitment_cost_30d : detail.ri_commitment_cost_1y) : detail.sp_commitment_cost;
                 appliedRate = isRI ? detail.ri_applied_rate : detail.sp_applied_rate;
-                costReduction = isRI ? detail.ri_cost_reduction : detail.sp_cost_reduction;
-                refund = isRI ? detail.ri_refund : detail.sp_refund;
+                costReduction = isRI ? (is30d ? detail.ri_cost_reduction_30d : detail.ri_cost_reduction_1y) : detail.sp_cost_reduction;
+                refund = isRI ? (is30d ? detail.ri_refund_30d : detail.ri_refund_1y) : detail.sp_refund;
                 insurance = isRI
                   ? (is30d ? detail.ri_insurance_30d : detail.ri_insurance_1y)
                   : (is30d ? detail.sp_insurance_30d : detail.sp_insurance_1y);
