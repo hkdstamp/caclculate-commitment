@@ -15,7 +15,7 @@ class PricingCache {
   constructor() {
     // 環境変数からキャッシュ期間を取得（デフォルト: 24時間）
     this.cacheDuration = parseInt(
-      process.env.PRICE_CACHE_DURATION || '86400',
+      process.env.CC_PRICE_CACHE_DURATION || '86400',
       10
     ) * 1000;
   }

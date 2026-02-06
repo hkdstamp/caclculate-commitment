@@ -52,16 +52,16 @@ async function retryWithBackoff<T>(
  * AWS Pricing APIクライアントの初期化
  */
 function getPricingClient(): PricingClient | null {
-  const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
-  const region = process.env.AWS_REGION || 'us-east-1';
-  const enableApi = process.env.ENABLE_AWS_PRICE_API === 'true';
+  const accessKeyId = process.env.CC_AWS_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.CC_AWS_SECRET_ACCESS_KEY;
+  const region = process.env.CC_AWS_REGION || 'us-east-1';
+  const enableApi = process.env.CC_ENABLE_AWS_PRICE_API === 'true';
 
   // デバッグ: 環境変数の読み込み状況を確認
   console.log('🔍 Environment Variables Check:', {
-    ENABLE_AWS_PRICE_API: process.env.ENABLE_AWS_PRICE_API,
+    CC_ENABLE_AWS_PRICE_API: process.env.CC_ENABLE_AWS_PRICE_API,
     enableApi,
-    AWS_REGION: process.env.AWS_REGION,
+    CC_AWS_REGION: process.env.CC_AWS_REGION,
     hasAccessKeyId: !!accessKeyId,
     hasSecretAccessKey: !!secretAccessKey,
   });
@@ -114,19 +114,19 @@ function getRegionDescription(regionCode: string): string {
  * レート制限用の遅延（API呼び出し間隔）
  * 環境変数で設定可能。デフォルトは200ms
  */
-const API_CALL_DELAY = parseInt(process.env.AWS_API_CALL_DELAY || '200', 10);
+const API_CALL_DELAY = parseInt(process.env.CC_AWS_API_CALL_DELAY || '200', 10);
 
 /**
  * リトライ最大回数
  * 環境変数で設定可能。デフォルトは5回
  */
-const MAX_RETRIES = parseInt(process.env.AWS_API_MAX_RETRIES || '5', 10);
+const MAX_RETRIES = parseInt(process.env.CC_AWS_API_MAX_RETRIES || '5', 10);
 
 /**
  * リトライ初期遅延（ミリ秒）
  * 環境変数で設定可能。デフォルトは1000ms（1秒）
  */
-const INITIAL_RETRY_DELAY = parseInt(process.env.AWS_API_INITIAL_RETRY_DELAY || '1000', 10);
+const INITIAL_RETRY_DELAY = parseInt(process.env.CC_AWS_API_INITIAL_RETRY_DELAY || '1000', 10);
 
 /**
  * AWS Price List APIからEC2のRI価格を取得

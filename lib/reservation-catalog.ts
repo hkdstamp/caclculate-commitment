@@ -1058,7 +1058,7 @@ export async function findReservationDiscounts(
   );
 
   // AWS Price List APIが無効の場合は静的カタログを返す
-  if (process.env.ENABLE_AWS_PRICE_API !== 'true') {
+  if (process.env.CC_ENABLE_AWS_PRICE_API !== 'true') {
     return catalogResults;
   }
 

@@ -370,25 +370,25 @@ cp .env.example .env.local
 
 ```env
 # AWS Credentials
-AWS_ACCESS_KEY_ID=your_access_key_id_here
-AWS_SECRET_ACCESS_KEY=your_secret_access_key_here
-AWS_REGION=us-east-1
+CC_AWS_ACCESS_KEY_ID=your_access_key_id_here
+CC_AWS_SECRET_ACCESS_KEY=your_secret_access_key_here
+CC_AWS_REGION=us-east-1
 
 # Enable AWS Price List API (true/false)
-ENABLE_AWS_PRICE_API=true
+CC_ENABLE_AWS_PRICE_API=true
 
 # Cache duration (seconds)
-PRICE_CACHE_DURATION=86400
+CC_PRICE_CACHE_DURATION=86400
 
 # AWS API Rate Limiting (ThrottlingException対策)
-AWS_API_CALL_DELAY=1000          # API呼び出し間の遅延（ミリ秒）
-AWS_API_MAX_RETRIES=5            # ThrottlingException時の最大リトライ回数
-AWS_API_INITIAL_RETRY_DELAY=5000 # リトライ初期遅延（ミリ秒）
+CC_AWS_API_CALL_DELAY=1000          # API呼び出し間の遅延（ミリ秒）
+CC_AWS_API_MAX_RETRIES=5            # ThrottlingException時の最大リトライ回数
+CC_AWS_API_INITIAL_RETRY_DELAY=5000 # リトライ初期遅延（ミリ秒）
 ```
 
 **注意**: 
-- AWS Price List APIを使用しない場合は、`ENABLE_AWS_PRICE_API=false`のまま（デフォルト）にしてください。静的カタログが使用されます。
-- ThrottlingExceptionが頻発する場合は、`AWS_API_CALL_DELAY`を1500-2000msに増やしてください。
+- AWS Price List APIを使用しない場合は、`CC_ENABLE_AWS_PRICE_API=false`のまま（デフォルト）にしてください。静的カタログが使用されます。
+- ThrottlingExceptionが頻発する場合は、`CC_AWS_API_CALL_DELAY`を1500-2000msに増やしてください。
 
 ### 環境変数の確認方法
 
@@ -404,17 +404,17 @@ curl http://localhost:3000/api/env-test
 {
   "message": "Environment Variables Test",
   "env": {
-    "ENABLE_AWS_PRICE_API": "false",
-    "AWS_REGION": "us-east-1",
-    "AWS_ACCESS_KEY_ID": "SET (hidden)",
-    "AWS_SECRET_ACCESS_KEY": "SET (hidden)",
-    "PRICE_CACHE_DURATION": "86400",
+    "CC_ENABLE_AWS_PRICE_API": "false",
+    "CC_AWS_REGION": "us-east-1",
+    "CC_AWS_ACCESS_KEY_ID": "SET (hidden)",
+    "CC_AWS_SECRET_ACCESS_KEY": "SET (hidden)",
+    "CC_PRICE_CACHE_DURATION": "86400",
     "NODE_ENV": "development"
   }
 }
 ```
 
-- `AWS_ACCESS_KEY_ID` が "NOT SET" の場合、`.env.local` でクレデンシャルを設定してください
+- `CC_AWS_ACCESS_KEY_ID` が "NOT SET" の場合、`.env.local` でクレデンシャルを設定してください
 - サーバー起動時に `- Environments: .env.local` が表示されることを確認してください
 
 ### 開発サーバーの起動
@@ -511,7 +511,7 @@ npm run start
 
 ### 🔧 AWS Price List API統合
 
-環境変数で`ENABLE_AWS_PRICE_API=true`に設定すると、以下の動作になります：
+環境変数で`CC_ENABLE_AWS_PRICE_API=true`に設定すると、以下の動作になります：
 
 1. **リアルタイム取得**: RIとSPの価格をAWS Price List APIから取得
 2. **キャッシュ機能**: 取得した価格を24時間キャッシュ（設定可能）
