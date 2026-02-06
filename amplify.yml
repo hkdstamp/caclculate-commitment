@@ -1,0 +1,36 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci
+        # Generate .env.local from Amplify environment variables (if set)
+        - |
+          cat > .env.local <<'EOF'
+          # AWS Credentials for Price List API
+          CC_AWS_ACCESS_KEY_ID=${CC_AWS_ACCESS_KEY_ID}
+          CC_AWS_SECRET_ACCESS_KEY=${CC_AWS_SECRET_ACCESS_KEY}
+          CC_AWS_REGION=${CC_AWS_REGION:-us-east-1}
+
+          # Price API Settings
+          CC_ENABLE_AWS_PRICE_API=${CC_ENABLE_AWS_PRICE_API:-false}
+
+          # Cache duration for price data (in seconds)
+          CC_PRICE_CACHE_DURATION=${CC_PRICE_CACHE_DURATION:-86400}
+
+          # AWS Price List API Rate Limiting and Retry Settings
+          CC_AWS_API_CALL_DELAY=${CC_AWS_API_CALL_DELAY:-1000}
+          CC_AWS_API_MAX_RETRIES=${CC_AWS_API_MAX_RETRIES:-5}
+          CC_AWS_API_INITIAL_RETRY_DELAY=${CC_AWS_API_INITIAL_RETRY_DELAY:-5000}
+          EOF
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*
