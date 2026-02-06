@@ -62,6 +62,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
       'コスト削減額',
       '返金額',
       '償却費用',
+      '初期費用',
       'リスクプレミアム料',
       '最終支払額',
       '実効割引率',
@@ -69,7 +70,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
 
     // CSVデータ行
     const rows = results.details.map((detail) => {
-      let discount, commitmentCost, appliedRate, costReduction, refund, monthlyUpfront, insurance, finalPayment, effectiveRate;
+      let discount, commitmentCost, appliedRate, costReduction, refund, monthlyUpfront, upfrontFee, insurance, finalPayment, effectiveRate;
       
       if (isMix) {
         // Mix: SPがある場合はSP、ない場合はRI
@@ -81,6 +82,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
         costReduction = useSP ? detail.sp_cost_reduction : (is30d ? detail.ri_cost_reduction_30d : detail.ri_cost_reduction_1y);
         refund = useSP ? detail.sp_refund : (is30d ? detail.ri_refund_30d : detail.ri_refund_1y);
         monthlyUpfront = useSP ? detail.sp_monthly_upfront_30d : (is30d ? detail.ri_monthly_upfront_30d : detail.ri_monthly_upfront_1y);
+        upfrontFee = useSP ? detail.sp_upfront_fee : (is30d ? detail.ri_upfront_fee : detail.ri_upfront_fee_1y);
         insurance = useSP
           ? (is30d ? detail.sp_insurance_30d : detail.sp_insurance_1y)
           : (is30d ? detail.ri_insurance_30d : detail.ri_insurance_1y);
@@ -100,6 +102,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
         costReduction = isRI ? (is30d ? detail.ri_cost_reduction_30d : detail.ri_cost_reduction_1y) : detail.sp_cost_reduction;
         refund = isRI ? (is30d ? detail.ri_refund_30d : detail.ri_refund_1y) : detail.sp_refund;
         monthlyUpfront = isRI ? (is30d ? detail.ri_monthly_upfront_30d : detail.ri_monthly_upfront_1y) : (is30d ? detail.sp_monthly_upfront_30d : detail.sp_monthly_upfront_1y);
+        upfrontFee = isRI ? (is30d ? detail.ri_upfront_fee : detail.ri_upfront_fee_1y) : detail.sp_upfront_fee;
         insurance = isRI
           ? (is30d ? detail.ri_insurance_30d : detail.ri_insurance_1y)
           : (is30d ? detail.sp_insurance_30d : detail.sp_insurance_1y);
@@ -128,6 +131,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
         costReduction.toFixed(3),
         refund.toFixed(3),
         monthlyUpfront.toFixed(3),
+        upfrontFee.toFixed(3),
         insurance.toFixed(3),
         finalPayment.toFixed(3),
         effectiveRate.toFixed(3),
@@ -261,6 +265,9 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                 償却費用
               </th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                初期費用
+              </th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 リスクプレミアム料
               </th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
@@ -278,7 +285,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
               const isMix = reservationType === 'Mix';
               const is30d = insuranceType === '30d';
 
-              let discount, commitmentCost, appliedRate, costReduction, refund, monthlyUpfront, insurance, finalPayment, effectiveRate;
+              let discount, commitmentCost, appliedRate, costReduction, refund, monthlyUpfront, upfrontFee, insurance, finalPayment, effectiveRate;
 
               if (isMix) {
                 // Mix: SPがある場合はSP、ない場合はRI
@@ -290,6 +297,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                 costReduction = useSP ? detail.sp_cost_reduction : (is30d ? detail.ri_cost_reduction_30d : detail.ri_cost_reduction_1y);
                 refund = useSP ? detail.sp_refund : (is30d ? detail.ri_refund_30d : detail.ri_refund_1y);
                 monthlyUpfront = useSP ? detail.sp_monthly_upfront_30d : (is30d ? detail.ri_monthly_upfront_30d : detail.ri_monthly_upfront_1y);
+                upfrontFee = useSP ? detail.sp_upfront_fee : (is30d ? detail.ri_upfront_fee : detail.ri_upfront_fee_1y);
                 insurance = useSP
                   ? (is30d ? detail.sp_insurance_30d : detail.sp_insurance_1y)
                   : (is30d ? detail.ri_insurance_30d : detail.ri_insurance_1y);
@@ -309,6 +317,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                 costReduction = isRI ? (is30d ? detail.ri_cost_reduction_30d : detail.ri_cost_reduction_1y) : detail.sp_cost_reduction;
                 refund = isRI ? (is30d ? detail.ri_refund_30d : detail.ri_refund_1y) : detail.sp_refund;
                 monthlyUpfront = isRI ? (is30d ? detail.ri_monthly_upfront_30d : detail.ri_monthly_upfront_1y) : (is30d ? detail.sp_monthly_upfront_30d : detail.sp_monthly_upfront_1y);
+                upfrontFee = isRI ? (is30d ? detail.ri_upfront_fee : detail.ri_upfront_fee_1y) : detail.sp_upfront_fee;
                 insurance = isRI
                   ? (is30d ? detail.ri_insurance_30d : detail.ri_insurance_1y)
                   : (is30d ? detail.sp_insurance_30d : detail.sp_insurance_1y);
@@ -383,6 +392,9 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-right text-gray-700">
                     {formatCurrency(monthlyUpfront)}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-right text-orange-600 font-medium">
+                    {formatCurrency(upfrontFee)}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-right text-gray-700">
                     {formatCurrency(insurance)}
