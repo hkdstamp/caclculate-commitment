@@ -6,6 +6,7 @@ frontend:
         - npm ci
         # Generate .env.local from Amplify environment variables (if set)
         - |
+          # Generate .env.local
           cat > .env.local <<'EOF'
           # AWS Credentials for Price List API
           CC_AWS_ACCESS_KEY_ID=${CC_AWS_ACCESS_KEY_ID}
@@ -23,6 +24,10 @@ frontend:
           CC_AWS_API_MAX_RETRIES=${CC_AWS_API_MAX_RETRIES:-5}
           CC_AWS_API_INITIAL_RETRY_DELAY=${CC_AWS_API_INITIAL_RETRY_DELAY:-5000}
           EOF
+
+          # Also create .env and .env.production from the same values
+          cp .env.local .env
+          cp .env.local .env.production
     build:
       commands:
         - npm run build
