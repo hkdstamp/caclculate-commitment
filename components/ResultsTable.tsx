@@ -57,10 +57,10 @@ export default function ResultsTable({ results }: ResultsTableProps) {
       '単価',
       '利用量',
       'オンデマンドコスト',
-      'コミットメントコスト',
+      '予約割引コスト',
       '適用率',
       'コスト削減額',
-      '返金額',
+      'コスト還元',
       '償却費用',
       '初期費用',
       'リスクプレミアム料',
@@ -250,7 +250,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                 オンデマンドコスト
               </th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                コミットメントコスト
+                予約割引コスト
               </th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 適用率
@@ -259,7 +259,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                 コスト削減額
               </th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                返金額
+                コスト還元
               </th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 償却費用

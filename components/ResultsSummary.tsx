@@ -81,7 +81,7 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
             {/* 30日保証 */}
             <div className="pb-4 border-b border-gray-200">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-                30日コミットメント保証プラン
+                30日スマート予約割引プラン
               </p>
               
               {/* 実効割引率 - 強調表示 */}
@@ -108,7 +108,7 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">コミットメントコスト</span>
+                  <span className="text-gray-600">予約割引コスト</span>
                   <span className="font-semibold text-gray-900">
                     {formatCurrency(results.mix_total_commitment_cost_30d)}
                   </span>
@@ -125,7 +125,7 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
             {/* 1年保証 */}
             <div>
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-                1年コミットメント保証プラン
+                1年スマート予約割引プラン
               </p>
               
               {/* 実効割引率 - 強調表示 */}
@@ -152,7 +152,7 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">コミットメントコスト</span>
+                  <span className="text-gray-600">予約割引コスト</span>
                   <span className="font-semibold text-gray-900">
                     {formatCurrency(results.mix_total_commitment_cost_1y)}
                   </span>
@@ -180,7 +180,7 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
             {/* 30日保証 */}
             <div className="pb-4 border-b border-gray-200">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-                30日コミットメント保証プラン
+                30日スマート予約割引プラン
               </p>
               
               {/* 実効割引率 - 強調表示 */}
@@ -207,7 +207,7 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">コミットメントコスト</span>
+                  <span className="text-gray-600">予約割引コスト</span>
                   <span className="font-semibold text-gray-900">
                     {formatCurrency(results.ri_total_commitment_cost_30d)}
                   </span>
@@ -224,7 +224,7 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
             {/* 1年保証 */}
             <div>
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-                1年コミットメント保証プラン
+                1年スマート予約割引プラン
               </p>
               
               {/* 実効割引率 - 強調表示 */}
@@ -251,7 +251,7 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">コミットメントコスト</span>
+                  <span className="text-gray-600">予約割引コスト</span>
                   <span className="font-semibold text-gray-900">
                     {formatCurrency(results.ri_total_commitment_cost_1y)}
                   </span>
@@ -279,7 +279,7 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
             {/* 30日保証 */}
             <div className="pb-4 border-b border-gray-200">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-                30日コミットメント保証プラン
+                30日スマート予約割引プラン
               </p>
               
               {/* 実効割引率 - 強調表示 */}
@@ -306,7 +306,7 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">コミットメントコスト</span>
+                  <span className="text-gray-600">予約割引コスト</span>
                   <span className="font-semibold text-gray-900">
                     {formatCurrency(results.sp_total_commitment_cost)}
                   </span>
@@ -323,7 +323,7 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
             {/* 1年保証 */}
             <div>
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-                1年コミットメント保証プラン
+                1年スマート予約割引プラン
               </p>
               
               {/* 実効割引率 - 強調表示 */}
@@ -350,7 +350,7 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">コミットメントコスト</span>
+                  <span className="text-gray-600">予約割引コスト</span>
                   <span className="font-semibold text-gray-900">
                     {formatCurrency(results.sp_total_commitment_cost)}
                   </span>

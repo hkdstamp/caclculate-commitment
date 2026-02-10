@@ -47,8 +47,8 @@ export default function Home() {
           params: {
             ri_applied_rate: riAppliedRate,
             sp_applied_rate: spAppliedRate,
-            insurance_rate_30d: 0.5, // 30日コミットメント保証: 50%
-            insurance_rate_1y: 0.3,  // 1年コミットメント保証: 30%
+            insurance_rate_30d: 0.5, // 30日プラン: 50%
+            insurance_rate_1y: 0.3,  // 1年プラン: 30%
           },
         }),
       });
@@ -79,7 +79,7 @@ export default function Home() {
           <li>AWSコストデータのCSVファイルをアップロードします</li>
           <li>システムが自動的にRI（Reserved Instance）とSP（Savings Plans）の最適な割引プランを検索します</li>
           <li>適用率を調整して、コミットメント割引の適用度合いを設定します</li>
-          <li>リスクプレミアム料（30日コミットメント保証: 50%、1年コミットメント保証: 30%）を含めた最終支払額と実効割引率を確認します</li>
+          <li>リスクプレミアム料（30日プラン: 50%、1年プラン: 30%）を含めた最終支払額と実効割引率を確認します</li>
         </ol>
       </div>
 
@@ -134,7 +134,7 @@ export default function Home() {
                 </svg>
               </div>
               <p className="text-lg text-gray-700 mt-4">
-                コミットメントコストを計算中...
+                予約割引コストを計算中...
               </p>
               <p className="text-sm text-gray-500 mt-2">
                 AWS Price List APIから最新価格を取得しています
@@ -160,7 +160,7 @@ export default function Home() {
           </h3>
           <p className="text-gray-500">
             AWSコストデータのCSVファイルをアップロードすると、<br />
-            自動的にコミットメントコストを計算します。
+            自動的に予約割引コストを計算します。
           </p>
         </div>
       )}
