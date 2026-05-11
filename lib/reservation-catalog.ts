@@ -1065,7 +1065,7 @@ export async function findReservationDiscounts(
   // AWS Price List APIから取得を試みる（RIとSP両方）
   if (reservationType) {
     try {
-      const { fetchPricingFromAWS, generateCacheKey } = await import('./aws-pricing-client');
+      const { fetchPricingFromReservedCostsApi, generateCacheKey } = await import('./awsreservedcosts-endpoint-client');
       const { pricingCache } = await import('./pricing-cache');
       
       const cacheKey = generateCacheKey(service, instanceType, region, reservationType, tenancy);
@@ -1077,9 +1077,9 @@ export async function findReservationDiscounts(
         return cachedData;
       }
 
-      // AWS APIから取得
-      console.log(`Fetching ${reservationType} pricing from AWS API for`, cacheKey);
-      const apiResults = await fetchPricingFromAWS(
+      // 新APIから取得
+      console.log(`Fetching ${reservationType} pricing from Reserved Costs API for`, cacheKey);
+      const apiResults = await fetchPricingFromReservedCostsApi(
         service, 
         instanceType, 
         region, 
@@ -1095,13 +1095,13 @@ export async function findReservationDiscounts(
       if (apiResults.length > 0) {
         // キャッシュに保存
         pricingCache.set(cacheKey, apiResults);
-        console.log(`Successfully fetched ${apiResults.length} ${reservationType} pricing options from AWS API`);
+        console.log(`Successfully fetched ${apiResults.length} ${reservationType} pricing options from Reserved Costs API`);
         return apiResults;
       } else {
-        console.log(`No ${reservationType} pricing found in AWS API, using static catalog`);
+        console.log(`No ${reservationType} pricing found in Reserved Costs API, using static catalog`);
       }
     } catch (error) {
-      console.error(`Error fetching ${reservationType} from AWS Price API, falling back to catalog:`, error);
+      console.error(`Error fetching ${reservationType} from Reserved Costs API, falling back to catalog:`, error);
     }
   }
 
