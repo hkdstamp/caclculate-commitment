@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { ReservationDiscount } from './types';
 import {
   listReservedCosts,
@@ -11,9 +13,85 @@ interface CacheEntry<T> {
   timestamp: number;
 }
 
+type SerializedCache<T> = Record<string, CacheEntry<T>>;
+
 const cacheDuration = parseInt(process.env.CC_PRICE_CACHE_DURATION || '86400', 10) * 1000;
-const reservedApiCache = new Map<string, CacheEntry<ReservedCostResponse>>();
-const spApiCache = new Map<string, CacheEntry<SavingsPlanCostResponse>>();
+// Debounce delay before writing cache to disk (ms). Default: 10 seconds.
+const persistDebounceMs = parseInt(process.env.CC_PRICE_PERSIST_DEBOUNCE || '10000', 10);
+
+const CACHE_DIR = process.env.CC_PRICE_CACHE_DIR
+  ? process.env.CC_PRICE_CACHE_DIR
+  : path.join(process.cwd(), '.cache', 'pricing');
+const RI_CACHE_FILE = path.join(CACHE_DIR, 'reserved-costs.json');
+const SP_CACHE_FILE = path.join(CACHE_DIR, 'savings-plans.json');
+
+// ── File persistence helpers ─────────────────────────────────────────────────
+
+function ensureCacheDir(): void {
+  try {
+    fs.mkdirSync(CACHE_DIR, { recursive: true });
+  } catch {
+    // ignore
+  }
+}
+
+function loadCacheFromFile<T>(filePath: string): Map<string, CacheEntry<T>> {
+  const map = new Map<string, CacheEntry<T>>();
+  try {
+    const raw = fs.readFileSync(filePath, 'utf-8');
+    const serialized: SerializedCache<T> = JSON.parse(raw);
+    const now = Date.now();
+    for (const [key, entry] of Object.entries(serialized)) {
+      // Drop entries that have already expired so stale data is never used.
+      if (now - entry.timestamp <= cacheDuration) {
+        map.set(key, entry);
+      }
+    }
+    console.log(`[pricing-cache] Loaded ${map.size} entries from ${path.basename(filePath)}`);
+  } catch {
+    // File missing or unreadable – start with empty cache.
+  }
+  return map;
+}
+
+function saveCacheToFile<T>(filePath: string, cache: Map<string, CacheEntry<T>>): void {
+  try {
+    ensureCacheDir();
+    const serialized: SerializedCache<T> = {};
+    for (const [key, entry] of cache) {
+      serialized[key] = entry;
+    }
+    fs.writeFileSync(filePath, JSON.stringify(serialized, null, 2), 'utf-8');
+  } catch (err) {
+    console.error(`[pricing-cache] Failed to persist ${path.basename(filePath)}:`, err);
+  }
+}
+
+// ── In-memory caches (pre-populated from disk on module load) ─────────────────
+
+ensureCacheDir();
+const reservedApiCache = loadCacheFromFile<ReservedCostResponse>(RI_CACHE_FILE);
+const spApiCache = loadCacheFromFile<SavingsPlanCostResponse>(SP_CACHE_FILE);
+
+// Debounce timers for flushing each cache to disk.
+let riPersistTimer: ReturnType<typeof setTimeout> | null = null;
+let spPersistTimer: ReturnType<typeof setTimeout> | null = null;
+
+function schedulePersistRi(): void {
+  if (riPersistTimer) clearTimeout(riPersistTimer);
+  riPersistTimer = setTimeout(() => {
+    saveCacheToFile(RI_CACHE_FILE, reservedApiCache);
+    riPersistTimer = null;
+  }, persistDebounceMs);
+}
+
+function schedulePersistSp(): void {
+  if (spPersistTimer) clearTimeout(spPersistTimer);
+  spPersistTimer = setTimeout(() => {
+    saveCacheToFile(SP_CACHE_FILE, spApiCache);
+    spPersistTimer = null;
+  }, persistDebounceMs);
+}
 
 function getRegionDescription(regionCode: string): string {
   const regionMap: Record<string, string> = {
@@ -69,11 +147,14 @@ function getCached<T>(cache: Map<string, CacheEntry<T>>, key: string): T[] | nul
   return entry.data;
 }
 
-function setCached<T>(cache: Map<string, CacheEntry<T>>, key: string, data: T[]): void {
-  cache.set(key, {
-    data,
-    timestamp: Date.now(),
-  });
+function setCachedRi(key: string, data: ReservedCostResponse[]): void {
+  reservedApiCache.set(key, { data, timestamp: Date.now() });
+  schedulePersistRi();
+}
+
+function setCachedSp(key: string, data: SavingsPlanCostResponse[]): void {
+  spApiCache.set(key, { data, timestamp: Date.now() });
+  schedulePersistSp();
 }
 
 async function fetchReservedCostsFromApi(
@@ -99,7 +180,7 @@ async function fetchReservedCostsFromApi(
     operatingSystem,
     deploymentOption,
   });
-  setCached(reservedApiCache, cacheKey, rows);
+  setCachedRi(cacheKey, rows);
   return rows;
 }
 
@@ -115,7 +196,7 @@ async function fetchSavingsPlansFromApi(service: string, region: string): Promis
     service,
     locationName,
   });
-  setCached(spApiCache, cacheKey, rows);
+  setCachedSp(cacheKey, rows);
   return rows;
 }
 
@@ -190,4 +271,31 @@ export function generateCacheKey(
 ): string {
   const tenancyStr = tenancy ? `:${tenancy}` : '';
   return `${service}:${instanceType || 'SP'}:${region}:${reservationType}${tenancyStr}`;
+}
+
+/**
+ * メモリキャッシュとファイルキャッシュを両方クリアします。
+ * デバウンスタイマーが残っていればキャンセルし、空のファイルを即時書き込みます。
+ */
+export function clearPricingCache(): { riCount: number; spCount: number } {
+  const riCount = reservedApiCache.size;
+  const spCount = spApiCache.size;
+
+  reservedApiCache.clear();
+  spApiCache.clear();
+
+  if (riPersistTimer) {
+    clearTimeout(riPersistTimer);
+    riPersistTimer = null;
+  }
+  if (spPersistTimer) {
+    clearTimeout(spPersistTimer);
+    spPersistTimer = null;
+  }
+
+  saveCacheToFile(RI_CACHE_FILE, reservedApiCache);
+  saveCacheToFile(SP_CACHE_FILE, spApiCache);
+
+  console.log(`[pricing-cache] Cache cleared (ri=${riCount}, sp=${spCount})`);
+  return { riCount, spCount };
 }

@@ -154,3 +154,87 @@ curl "http://localhost:3000/api/awsreservedcosts/sp-list?service=compute"
 
 - 旧実装: `app/awsreservedcosts`
 - 本ドキュメント追加後は、上記フォルダを削除しても API 仕様参照は `docs/awsreservedcosts-api.md` で継続可能
+
+---
+
+## 価格データキャッシュ仕様
+
+実装ファイル: `lib/awsreservedcosts-endpoint-client.ts`
+
+### 概要
+
+BigQuery への問い合わせコストと応答時間を削減するため、取得した価格データを以下の2段階でキャッシュします。
+
+```
+取得優先順:
+  1. ファイルキャッシュ (JSON)   ← サーバー再起動をまたいで永続化
+  2. メモリキャッシュ            ← プロセス存続中の高速アクセス
+  3. BigQuery API リクエスト     ← キャッシュ未ヒット時のみ実行
+```
+
+### キャッシュファイルの保存場所
+
+| ファイル | 内容 |
+|---|---|
+| `.cache/pricing/reserved-costs.json` | RI（Reserved Instance）価格データ |
+| `.cache/pricing/savings-plans.json` | SP（Savings Plans）価格データ |
+
+デフォルトはプロジェクトルートの `.cache/pricing/` 以下。`CC_PRICE_CACHE_DIR` で変更可能。  
+`.cache/` は `.gitignore` に登録済みのためリポジトリには含まれません。
+
+### 起動時の動作
+
+1. モジュールロード時に上記２ファイルを読み込む
+2. 有効期限（`CC_PRICE_CACHE_DURATION`）内のエントリのみメモリに展開する
+3. 期限切れエントリはロード時に破棄される（ファイルは次回書き込みで更新）
+
+### データ取得時の動作
+
+```
+fetchReservedCostsFromApi / fetchSavingsPlansFromApi 呼び出し
+  │
+  ├─ メモリキャッシュあり（期限内）→ そのまま返す
+  │
+  ├─ メモリキャッシュなし or 期限切れ
+  │     └─ BigQuery API を呼び出す
+  │           └─ 結果をメモリに保存
+  │                 └─ デバウンスタイマーをセット（CC_PRICE_PERSIST_DEBOUNCE 後にファイル書き込み）
+  │
+  └─ 結果を返す
+```
+
+> **注意**: ファイルキャッシュはメモリに展開済みのため、「ファイルを直接参照する」パスは起動時のみです。  
+> 実行中はメモリキャッシュが常にファイルキャッシュより新しい状態になります。
+
+### デバウンス書き込み
+
+API取得後すぐにファイルへ書き込むのではなく、`CC_PRICE_PERSIST_DEBOUNCE` ミリ秒後に書き込みます。  
+短時間に複数キーが取得された場合はタイマーがリセットされ、まとめて1回の書き込みになります。
+
+### 環境変数
+
+| 変数名 | デフォルト | 説明 |
+|---|---|---|
+| `CC_PRICE_CACHE_DIR` | `<cwd>/.cache/pricing` | キャッシュJSONファイルの保存ディレクトリ |
+| `CC_PRICE_CACHE_DURATION` | `86400`（秒） | キャッシュ有効期間。期限切れエントリは再取得される |
+| `CC_PRICE_PERSIST_DEBOUNCE` | `10000`（ms） | API取得後にファイルへ書き込むまでの遅延（デバウンス） |
+
+`.env.local` 設定例:
+
+```dotenv
+# キャッシュを /tmp に保存（例: コンテナ環境）
+CC_PRICE_CACHE_DIR=/tmp/pricing-cache
+
+# キャッシュを7日間有効にする
+CC_PRICE_CACHE_DURATION=604800
+
+# ファイル書き込みを即時に近い形で行う（開発用）
+CC_PRICE_PERSIST_DEBOUNCE=1000
+```
+
+### キャッシュの手動削除
+
+```bash
+# すべての価格キャッシュを削除（次回リクエスト時に再取得される）
+rm -rf .cache/pricing/
+```
