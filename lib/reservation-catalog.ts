@@ -1132,6 +1132,7 @@ export function getBestReservationDiscount(
   discounts: ReservationDiscount[]
 ): ReservationDiscount | undefined {
   if (discounts.length === 0) return undefined;
+console.log('Evaluating reservation discounts to find the best option:', discounts);
 
   // 支払い方法の優先順位
   const paymentPriority: Record<string, number> = {
@@ -1153,11 +1154,11 @@ export function getBestReservationDiscount(
     if (priorityA !== priorityB) {
       return priorityA - priorityB;
     }
-    
+console.log('Comparing discounts with same contract years and payment method, checking unit price:', a, b);
     // 3. 契約年数と支払い方法が同じ場合は単価が安い方を優先
     return a.unit_price - b.unit_price;
   });
-
+console.log('Sorted reservation discounts by preference:', sorted); 
   const bestDiscount = sorted[0];
 
   // フォールバックロジック: 3年NoUpfrontがない場合、1年NoUpfrontを探す
