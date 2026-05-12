@@ -114,7 +114,7 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">リスクプレミアム料 (50%)</span>
+                  <span className="text-gray-600">スマート予約利用料 (50%)</span>
                   <span className="font-semibold text-gray-900">
                     {formatCurrency(results.mix_total_insurance_30d)}
                   </span>
@@ -158,7 +158,7 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">リスクプレミアム料 (30%)</span>
+                  <span className="text-gray-600">スマート予約利用料 (30%)</span>
                   <span className="font-semibold text-gray-900">
                     {formatCurrency(results.mix_total_insurance_1y)}
                   </span>
@@ -213,7 +213,7 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">リスクプレミアム料 (50%)</span>
+                  <span className="text-gray-600">スマート予約利用料 (50%)</span>
                   <span className="font-semibold text-gray-900">
                     {formatCurrency(results.ri_total_insurance_30d)}
                   </span>
@@ -257,7 +257,7 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">リスクプレミアム料 (30%)</span>
+                  <span className="text-gray-600">スマート予約利用料 (30%)</span>
                   <span className="font-semibold text-gray-900">
                     {formatCurrency(results.ri_total_insurance_1y)}
                   </span>
@@ -312,7 +312,7 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">リスクプレミアム料 (50%)</span>
+                  <span className="text-gray-600">スマート予約利用料 (50%)</span>
                   <span className="font-semibold text-gray-900">
                     {formatCurrency(results.sp_total_insurance_30d)}
                   </span>
@@ -356,7 +356,7 @@ export default function ResultsSummary({ results, riRate, spRate }: ResultsSumma
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">リスクプレミアム料 (30%)</span>
+                  <span className="text-gray-600">スマート予約利用料 (30%)</span>
                   <span className="font-semibold text-gray-900">
                     {formatCurrency(results.sp_total_insurance_1y)}
                   </span>

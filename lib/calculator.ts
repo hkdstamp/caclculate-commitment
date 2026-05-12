@@ -250,7 +250,7 @@ export async function calculateCommitmentCost(
   const riCommitmentWithDepreciation30d = riCommitmentCost30d + monthlyUpfrontCost30d;
   const riCostReduction30d = Math.max(0, riAppliedOndemand - riCommitmentWithDepreciation30d);
   const riRefund30d = riCommitmentWithDepreciation30d === ondemandCost ? 0 : Math.max(0, riCommitmentWithDepreciation30d - riAppliedOndemand);
-  // リスクプレミアム料 = コスト削減額 × 料率
+  // スマート予約利用料 = コスト削減額 × 料率
   const riInsurance30d = riCostReduction30d > 0 ? riCostReduction30d * params.insurance_rate_30d : 0;
   const riFinalPayment30d = riCommitmentWithDepreciation30d + riInsurance30d;
   // 実効割引率 = 1 - (月間総コスト / (オンデマンドコスト × 適用率))
@@ -262,7 +262,7 @@ export async function calculateCommitmentCost(
   const riCommitmentWithDepreciation1y = riCommitmentCost1y + monthlyUpfrontCost1y;
   const riCostReduction1y = Math.max(0, riAppliedOndemand - riCommitmentWithDepreciation1y);
   const riRefund1y = riCommitmentWithDepreciation1y === ondemandCost ? 0 : Math.max(0, riCommitmentWithDepreciation1y - riAppliedOndemand);
-  // リスクプレミアム料 = コスト削減額 × 料率
+  // スマート予約利用料 = コスト削減額 × 料率
   const riInsurance1y = riCostReduction1y > 0 ? riCostReduction1y * params.insurance_rate_1y : 0;
   const riFinalPayment1y = riCommitmentWithDepreciation1y + riInsurance1y;
   // 実効割引率 = 1 - (月間総コスト / (オンデマンドコスト × 適用率))
@@ -284,7 +284,7 @@ export async function calculateCommitmentCost(
   // オンデマンドコストとコミットメントコストが同額の場合、返金は0
   const spRefund = spCommitmentCost === ondemandCost ? 0 : Math.max(0, spCommitmentCost - spAppliedOndemand);
 
-  // リスクプレミアム料 = コスト削減額 × リスクプレミアム料率（コスト削減額が0以下の場合はリスクプレミアム料も0）
+  // スマート予約利用料 = コスト削減額 × スマート予約利用料率（コスト削減額が0以下の場合はスマート予約利用料も0）
   const spInsurance30d = spCostReduction > 0 ? spCostReduction * params.insurance_rate_30d : 0;
   const spInsurance1y = spCostReduction > 0 ? spCostReduction * params.insurance_rate_1y : 0;
 
