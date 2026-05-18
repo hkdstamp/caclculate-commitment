@@ -16,6 +16,8 @@ export async function GET(request: NextRequest) {
       operatingSystem: searchParams.get('operating_system') ?? undefined,
       tenancy: searchParams.get('tenancy') ?? undefined,
       deploymentOption: searchParams.get('deployment_option') ?? undefined,
+      usageType: searchParams.get('usage_type') ?? undefined,
+      operation: searchParams.get('operation') ?? undefined,
     });
 
     return NextResponse.json(rows);

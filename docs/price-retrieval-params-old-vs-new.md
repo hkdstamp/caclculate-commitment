@@ -7,10 +7,41 @@
 | サービス | 旧バージョン（AWS Pricing API）で使うパラメータ | 新バージョン（内部API/BigQuery）で使うパラメータ | 差分ポイント |
 |---|---|---|---|
 | EC2 | instanceType, region(location), tenancy, operatingSystem, preInstalledSw=NA(固定) | service=ec2, location_name, instance_type, tenancy, operating_system | 新はBigQuery母集団から取得するため件数が増えやすい。最安単価は一致しやすい |
-| RDS | instanceType, region(location), databaseEngine, databaseEdition(任意), deploymentOption(任意), licenseModel(任意) | service=rds, location_name, instance_type, deployment_option（RDSではtenancy未適用） | 旧は条件厳密一致のため0件化しやすい。新はdatabaseEngine/databaseEdition/licenseModelを現在は未使用 |
+| RDS | instanceType, region(location), databaseEngine, databaseEdition(任意), deploymentOption(任意), licenseModel(任意) | service=rds, location_name, instance_type, operating_system（＝databaseEngine+databaseEdition結合値）, deployment_option, usage_type（lineitem_usagetype）, operation（lineitem_operation） | `operating_system` に `"Oracle Standard Two"` 等を渡してDBエンジン・エディションで絞り込む。`usage_type`/`operation` でLicense included / BYOLを区別する |
 | ElastiCache | 未実装（常に0件） | service=elasticache, location_name, instance_type | 新のみ実データ取得可能 |
 | Redshift | 未実装（常に0件） | service=redshift, location_name, instance_type | 新のみ実データ取得可能 |
 | OpenSearch/ES | 未実装（常に0件） | service=es, location_name, instance_type | 新のみ実データ取得可能 |
+
+### RDS RI の os_db / usage_id / operation 対応表
+
+BigQueryの `amazonrds` テーブルでは、`os_db`（DBエンジン・エディション）と `usage_id`（AWS usagetype）の組み合わせでライセンスモデルを区別できる。
+
+| operation | usage_id の形式 | 価格帯 | 意味 |
+|---|---|---|---|
+| `CreateDBInstance:0020` | `APN1-*Usage:db.<family>.<size>` | 高（License included） | ライセンス込み価格。**計算に使用する** |
+| `CreateDBInstance:0019` | `APN1-*Usage:db.<family>` | 低（BYOL正規化単価） | Bring Your Own License の正規化単価。**使用しない** |
+
+**BigQuery `os_db` の値（RDSエンジン別）：**
+
+| product_databaseengine | product_databaseedition | BigQuery os_db 値 |
+|---|---|---|
+| Oracle | Standard Two | `Oracle Standard Two` |
+| Oracle | （Enterprise） | `Oracle Enterprise` |
+| MySQL | （Community） | `MySQL` |
+| PostgreSQL | — | `PostgreSQL` |
+| Aurora MySQL | — | `Aurora MySQL` |
+| Aurora PostgreSQL | — | `Aurora PostgreSQL` |
+| SQL Server | Web | `SQL Server Web` |
+| SQL Server | Standard | `SQL Server Standard` |
+
+**構築ロジック（`lib/awsreservedcosts-endpoint-client.ts`）：**
+
+```typescript
+// databaseEngine + databaseEdition → os_db フィルタ値
+const osDbFilter = [databaseEngine, databaseEdition].filter(Boolean).join(' ');
+// lineitem_usagetype → usage_id フィルタ（License included/BYOL 区別）
+const usageTypeFilter = lineitemUsageType;
+```
 
 ## SP（Savings Plans）
 

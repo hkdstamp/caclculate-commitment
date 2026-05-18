@@ -29,9 +29,11 @@
 | `service` | 任意 | 空（全サービス） | `ec2`, `rds`, `elasticache`, `redshift`, `es`（エイリアス対応） |
 | `location_name` | 任意 | なし | 例: `Asia Pacific (Tokyo)` |
 | `instance_type` | 任意 | なし | 例: `db.r5.4xlarge` |
-| `operating_system` | 任意 | なし | OS/DB属性で絞り込み |
+| `operating_system` | 任意 | なし | OS/DB属性で絞り込み（BigQuery内部列名: `os_db`）|
 | `tenancy` | 任意 | なし | `Shared`, `Dedicated`, `Host` |
-| `deployment_option` | 任意 | なし | RDSの配置オプション |
+| `deployment_option` | 任意 | なし | RDSの配置オプション（例: `Multi-AZ`, `Single-AZ`）|
+| `usage_type` | 任意 | なし | BigQuery `usage_id` で絞り込み。RDSのLicense included / BYOL識別に使用（例: `APN1-Multi-AZUsage:db.r5.4xl`）|
+| `operation` | 任意 | なし | BigQuery `operation` で絞り込み。RDSのLicense included識別に使用（例: `CreateDBInstance:0020`）|
 
 #### 正常レスポンス
 

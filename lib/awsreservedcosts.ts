@@ -10,6 +10,8 @@ export interface ListInput {
   operatingSystem?: string;
   tenancy?: string;
   deploymentOption?: string;
+  usageType?: string;
+  operation?: string;
 }
 
 export interface ReservedCost {
@@ -313,6 +315,14 @@ function buildReservedWhereFilter(input: ListInput): string {
 
   if (input.deploymentOption?.trim()) {
     clauses.push(`h.deployment_option = '${escapeSqlString(input.deploymentOption.trim())}'`);
+  }
+
+  if (input.usageType?.trim()) {
+    clauses.push(`h.usage_id = '${escapeSqlString(input.usageType.trim())}'`);
+  }
+
+  if (input.operation?.trim()) {
+    clauses.push(`h.operation = '${escapeSqlString(input.operation.trim())}'`);
   }
 
   if (clauses.length === 0) {

@@ -49,7 +49,9 @@ async function findRDSReservationDiscount(
   databaseEngine?: string,
   databaseEdition?: string,
   deploymentOption?: string,
-  licenseModel?: string
+  licenseModel?: string,
+  lineitemOperation?: string,
+  lineitemUsageType?: string
 ): Promise<ReservationDiscount | undefined> {
   const allDiscounts = await findReservationDiscounts(
     service,
@@ -61,7 +63,9 @@ async function findRDSReservationDiscount(
     databaseEngine,
     databaseEdition,
     deploymentOption,
-    licenseModel
+    licenseModel,
+    lineitemOperation,
+    lineitemUsageType
   );
 
   if (process.env.NODE_ENV === 'development') {
@@ -146,7 +150,9 @@ export async function calculateCommitmentCost(
       costData.product_databaseengine,
       costData.product_databaseedition,
       costData.product_deploymentoption,
-      costData.product_licensemodel
+      costData.product_licensemodel,
+      costData.lineitem_operation,
+      costData.lineitem_usagetype
     );
     riDiscount1y = await findRDSReservationDiscount(
       costData.service,
@@ -157,7 +163,9 @@ export async function calculateCommitmentCost(
       costData.product_databaseengine,
       costData.product_databaseedition,
       costData.product_deploymentoption,
-      costData.product_licensemodel
+      costData.product_licensemodel,
+      costData.lineitem_operation,
+      costData.lineitem_usagetype
     );
   } else {
     // RDS以外は通常の検索

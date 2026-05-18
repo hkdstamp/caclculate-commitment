@@ -184,10 +184,12 @@ async function fetchReservedCostsFromApi(
   instanceType: string | undefined,
   tenancy?: 'Shared' | 'Dedicated' | 'Host',
   operatingSystem?: string,
-  deploymentOption?: string
+  deploymentOption?: string,
+  usageType?: string,
+  operation?: string
 ): Promise<ReservedCostResponse[]> {
   const locationName = getRegionDescription(region);
-  const cacheKey = `ri:${service}:${locationName}:${instanceType || ''}:${tenancy || ''}:${operatingSystem || ''}:${deploymentOption || ''}`;
+  const cacheKey = `ri:${service}:${locationName}:${instanceType || ''}:${tenancy || ''}:${operatingSystem || ''}:${deploymentOption || ''}:${usageType || ''}:${operation || ''}`;
   const cached = getCached(reservedApiCache, cacheKey);
   if (cached) {
     return cached;
@@ -200,6 +202,8 @@ async function fetchReservedCostsFromApi(
     tenancy,
     operatingSystem,
     deploymentOption,
+    usageType,
+    operation,
   });
   setCachedRi(cacheKey, rows);
   return rows;
@@ -279,8 +283,8 @@ export async function fetchPricingFromReservedCostsApi(
   reservationType: 'RI' | 'SP',
   tenancy?: 'Shared' | 'Dedicated' | 'Host',
   operatingSystem?: string,
-  _databaseEngine?: string,
-  _databaseEdition?: string,
+  databaseEngine?: string,
+  databaseEdition?: string,
   deploymentOption?: string,
   _licenseModel?: string,
   lineitemOperation?: string,
@@ -295,13 +299,26 @@ export async function fetchPricingFromReservedCostsApi(
 
     const tenancyFilter = apiService === 'ec2' ? tenancy : undefined;
 
+    // RDSの場合: databaseEngine + databaseEdition から os_db フィルタ値を構築
+    // (例: 'Oracle' + 'Standard Two' → 'Oracle Standard Two')
+    const osDbFilter = apiService === 'rds' && databaseEngine
+      ? [databaseEngine, databaseEdition].filter(Boolean).join(' ')
+      : operatingSystem;
+
+    // RDSの場合: lineitem_usagetype で usage_id フィルタ（License included vs BYOL の区別）
+    // lineitem_operation で operation フィルタ（さらに絞り込み）
+    const usageTypeFilter = apiService === 'rds' ? lineitemUsageType : undefined;
+    const operationFilter = apiService === 'rds' ? lineitemOperation : undefined;
+
     const rows = await fetchReservedCostsFromApi(
       apiService,
       region,
       instanceType,
       tenancyFilter,
-      operatingSystem,
-      deploymentOption
+      osDbFilter,
+      deploymentOption,
+      usageTypeFilter,
+      operationFilter
     );
 
     return rows.map((row) => ({
