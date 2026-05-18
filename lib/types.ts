@@ -44,6 +44,8 @@ export interface ReservationDiscount {
   license_model?: string; // ライセンス（RDS用）
   // 共通
   upfront_fee?: number; // 初期費用（PartialUpfront/AllUpfrontの場合）
+  usage_type?: string; // UsageType (主にSP候補絞り込み用)
+  operation?: string; // Operation (主にSP候補絞り込み用)
 }
 
 // コミットメントコスト計算結果

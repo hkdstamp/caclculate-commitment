@@ -182,6 +182,12 @@ export async function calculateCommitmentCost(
     'SP',
     tenancy,
     costData.product_operatingsystem, // EC2の場合、OS情報を渡す
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    costData.lineitem_operation,
+    costData.lineitem_usagetype,
   );
   const spDiscount = getBestReservationDiscount(spDiscounts);
 

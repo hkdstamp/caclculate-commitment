@@ -196,6 +196,17 @@ ORDER BY
 - Compute Savings Plansの標準割引率を適用
 - インスタンスタイプ不問
 
+**補足（最新仕様）**:
+- SP候補の取得は `service + region` を中心に広く取得
+- 実際に計算へ採用する単価は、CSV行の文脈で段階的に絞り込み
+  - `lineitem_usagetype + lineitem_operation` 完全一致
+  - `lineitem_usagetype` 一致
+  - `instanceType` 由来サフィックス + `lineitem_operation` 一致
+  - `instanceType` 由来サフィックス一致
+  - `lineitem_operation` 一致
+  - 最後に全件フォールバック
+- この絞り込みにより、対象行と無関係な最小SP単価（例: 別インスタンスタイプの 0.002x）が選ばれる事象を回避
+
 #### 3. 初期費用（Upfront Fee）の取り扱い
 
 **AWS Price List APIから取得**:

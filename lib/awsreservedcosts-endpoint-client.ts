@@ -200,6 +200,58 @@ async function fetchSavingsPlansFromApi(service: string, region: string): Promis
   return rows;
 }
 
+function normalizeForMatch(value: string | undefined): string {
+  return (value || '').trim().toLowerCase();
+}
+
+function buildUsageSuffix(instanceType: string | undefined): string {
+  if (!instanceType) {
+    return '';
+  }
+  return `:${instanceType.toLowerCase()}`;
+}
+
+function filterSavingsPlanRows(
+  rows: SavingsPlanCostResponse[],
+  instanceType?: string,
+  lineitemOperation?: string,
+  lineitemUsageType?: string
+): SavingsPlanCostResponse[] {
+  if (rows.length === 0) {
+    return rows;
+  }
+
+  const op = normalizeForMatch(lineitemOperation);
+  const usage = normalizeForMatch(lineitemUsageType);
+  const usageSuffix = buildUsageSuffix(instanceType);
+
+  const withDerivedInstance = usageSuffix
+    ? rows.filter((row) => normalizeForMatch(row.usage_id).endsWith(usageSuffix))
+    : rows;
+
+  if (!op && !usage && !usageSuffix) {
+    return rows;
+  }
+
+  const strict = rows.filter(
+    (row) => normalizeForMatch(row.usage_id) === usage && normalizeForMatch(row.operation) === op
+  );
+  if (strict.length > 0) return strict;
+
+  const usageOnly = rows.filter((row) => normalizeForMatch(row.usage_id) === usage);
+  if (usageOnly.length > 0) return usageOnly;
+
+  const opAndInstance = withDerivedInstance.filter((row) => normalizeForMatch(row.operation) === op);
+  if (opAndInstance.length > 0) return opAndInstance;
+
+  if (withDerivedInstance.length > 0) return withDerivedInstance;
+
+  const opOnly = rows.filter((row) => normalizeForMatch(row.operation) === op);
+  if (opOnly.length > 0) return opOnly;
+
+  return rows;
+}
+
 export async function fetchPricingFromReservedCostsApi(
   service: string,
   instanceType: string | undefined,
@@ -210,7 +262,9 @@ export async function fetchPricingFromReservedCostsApi(
   _databaseEngine?: string,
   _databaseEdition?: string,
   deploymentOption?: string,
-  _licenseModel?: string
+  _licenseModel?: string,
+  lineitemOperation?: string,
+  lineitemUsageType?: string
 ): Promise<ReservationDiscount[]> {
   const apiService = normalizeServiceForApi(service, reservationType);
 
@@ -247,7 +301,9 @@ export async function fetchPricingFromReservedCostsApi(
   }
 
   const rows = await fetchSavingsPlansFromApi(apiService, region);
-  return rows.map((row) => ({
+  const filteredRows = filterSavingsPlanRows(rows, instanceType, lineitemOperation, lineitemUsageType);
+
+  return filteredRows.map((row) => ({
     service,
     contract_years: parseContractYears(row.lease_contract_length),
     payment_method: mapPurchaseOption(row.purchase_option),
@@ -259,6 +315,8 @@ export async function fetchPricingFromReservedCostsApi(
     tenancy: row.tenancy as 'Shared' | 'Dedicated' | 'Host' | undefined,
     operating_system: row.operating_system || undefined,
     upfront_fee: 0,
+    usage_type: row.usage_id || undefined,
+    operation: row.operation || undefined,
   }));
 }
 

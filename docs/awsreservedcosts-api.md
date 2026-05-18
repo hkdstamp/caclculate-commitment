@@ -115,6 +115,19 @@
 - `400`: 不正な `project`/`dataset` 形式
 - `500`: BigQuery実行エラーなどサーバー内部エラー
 
+#### 実装上の補足（計算時の候補絞り込み）
+
+- `sp-list` エンドポイント自体は、`service` と `location_name` を中心に広く候補を返却する。
+- 一方、実際の見積計算と比較スクリプトでは、`lineitem_operation` と `lineitem_usagetype`（および `instanceType`）を使って候補を段階的に絞る。
+- 絞り込み優先順は以下。
+  - usage_type + operation 完全一致
+  - usage_type 一致
+  - instanceType 由来サフィックス + operation 一致
+  - instanceType 由来サフィックス一致
+  - operation 一致
+  - 最後に全件フォールバック
+- この処理により、対象行と無関係な最小SP単価が選ばれることを防ぐ。
+
 ## 認証・実行前提
 
 - Node.js runtime で動作（`runtime = 'nodejs'`）
@@ -210,6 +223,8 @@ fetchReservedCostsFromApi / fetchSavingsPlansFromApi 呼び出し
 
 API取得後すぐにファイルへ書き込むのではなく、`CC_PRICE_PERSIST_DEBOUNCE` ミリ秒後に書き込みます。  
 短時間に複数キーが取得された場合はタイマーがリセットされ、まとめて1回の書き込みになります。
+
+> 補足: 短命プロセス（単発スクリプト実行など）では、デバウンス書き込み前に終了して `.cache/pricing/savings-plans.json` が作成されないことがあります。
 
 ### 環境変数
 

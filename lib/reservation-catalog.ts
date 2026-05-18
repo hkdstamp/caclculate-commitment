@@ -1047,7 +1047,9 @@ export async function findReservationDiscounts(
   databaseEngine?: string,
   databaseEdition?: string,
   deploymentOption?: string,
-  licenseModel?: string
+  licenseModel?: string,
+  lineitemOperation?: string,
+  lineitemUsageType?: string
 ): Promise<ReservationDiscount[]> {
   // 静的カタログから検索
   const catalogResults = findReservationDiscountsFromCatalog(
@@ -1079,7 +1081,9 @@ export async function findReservationDiscounts(
       databaseEngine,
       databaseEdition,
       deploymentOption,
-      licenseModel
+      licenseModel,
+      lineitemOperation,
+      lineitemUsageType
     );
     if (apiResults.length > 0) {
       pricingCache.set(cacheKey, apiResults);

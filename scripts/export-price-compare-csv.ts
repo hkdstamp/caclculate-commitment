@@ -212,6 +212,8 @@ async function compareOne(
     databaseEdition || undefined,
     deploymentOption || undefined,
     licenseModel || undefined,
+    row.lineitem_operation || undefined,
+    row.lineitem_usagetype || undefined,
   );
 
   const oldBest = summarizeBest(oldResults);
