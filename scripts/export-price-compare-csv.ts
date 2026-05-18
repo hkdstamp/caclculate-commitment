@@ -132,7 +132,7 @@ async function compareOnDemandOne(
         bestPrice = c.price;
         bestLicenseModel = c.licenseModel;
         diffValue = (c.price ?? 0) - (csvOnDemand ?? 0);
-        diffPercent = csvOnDemand > 0 ? ((diffValue / csvOnDemand) * 100).toFixed(2) : '0.00';
+        diffPercent = (csvOnDemand ?? 0) > 0 ? ((diffValue / (csvOnDemand ?? 0)) * 100).toFixed(2) : '0.00';
       }
     }
   } else {
@@ -149,7 +149,7 @@ async function compareOnDemandOne(
       licenseModel || undefined,
     );
     diffValue = (bestPrice ?? 0) - (csvOnDemand ?? 0);
-    diffPercent = csvOnDemand > 0 ? ((diffValue / csvOnDemand) * 100).toFixed(2) : '0.00';
+    diffPercent = (csvOnDemand ?? 0) > 0 ? ((diffValue / (csvOnDemand ?? 0)) * 100).toFixed(2) : '0.00';
     bestLicenseModel = licenseModel;
   }
 
