@@ -63,7 +63,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
       'コスト還元',
       '償却費用',
       '初期費用',
-      'リスクプレミアム料',
+      'スマート予約利用料',
       '最終支払額',
       '実効割引率',
     ];
@@ -268,7 +268,7 @@ export default function ResultsTable({ results }: ResultsTableProps) {
                 初期費用
               </th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                リスクプレミアム料
+                スマート予約利用料
               </th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 最終支払額

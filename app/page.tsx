@@ -14,6 +14,8 @@ export default function Home() {
   const [results, setResults] = useState<AggregatedResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cacheClearing, setCacheClearing] = useState(false);
+  const [cacheMessage, setCacheMessage] = useState<string | null>(null);
 
   const handleDataLoaded = (data: AWSCostData[]) => {
     setCostData(data);
@@ -25,6 +27,21 @@ export default function Home() {
     setSpRate(newSpRate);
     if (costData.length > 0) {
       calculateResults(costData, newRiRate, newSpRate);
+    }
+  };
+
+  const handleClearCache = async () => {
+    setCacheClearing(true);
+    setCacheMessage(null);
+    try {
+      const res = await fetch('/api/cache/clear', { method: 'POST' });
+      const data = await res.json();
+      setCacheMessage(data.message ?? (data.ok ? 'キャッシュをクリアしました' : data.error));
+    } catch {
+      setCacheMessage('キャッシュクリアに失敗しました');
+    } finally {
+      setCacheClearing(false);
+      setTimeout(() => setCacheMessage(null), 5000);
     }
   };
 
@@ -70,6 +87,35 @@ export default function Home() {
 
   return (
     <div className="max-w-7xl mx-auto">
+      {/* ツールバー */}
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={handleClearCache}
+          disabled={cacheClearing}
+          className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          title="価格データのキャッシュを強制クリアします。次回計算時にBigQueryから最新データを取得します。"
+        >
+          {cacheClearing ? (
+            <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+          ) : (
+            <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          )}
+          価格キャッシュをクリア
+        </button>
+      </div>
+
+      {/* キャッシュクリア結果メッセージ */}
+      {cacheMessage && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+          <p className="text-blue-800 text-sm">{cacheMessage}</p>
+        </div>
+      )}
+
       {/* 説明セクション */}
       <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-3">
@@ -79,7 +125,7 @@ export default function Home() {
           <li>AWSコストデータのCSVファイルをアップロードします</li>
           <li>システムが自動的にRI（Reserved Instance）とSP（Savings Plans）の最適な割引プランを検索します</li>
           <li>適用率を調整して、コミットメント割引の適用度合いを設定します</li>
-          <li>リスクプレミアム料（30日プラン: 50%、1年プラン: 30%）を含めた最終支払額と実効割引率を確認します</li>
+          <li>スマート予約利用料（30日プラン: 50%、1年プラン: 30%）を含めた最終支払額と実効割引率を確認します</li>
         </ol>
       </div>
 

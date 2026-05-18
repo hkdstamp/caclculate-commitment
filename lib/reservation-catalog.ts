@@ -1047,7 +1047,9 @@ export async function findReservationDiscounts(
   databaseEngine?: string,
   databaseEdition?: string,
   deploymentOption?: string,
-  licenseModel?: string
+  licenseModel?: string,
+  lineitemOperation?: string,
+  lineitemUsageType?: string
 ): Promise<ReservationDiscount[]> {
   // 静的カタログから検索
   const catalogResults = findReservationDiscountsFromCatalog(
@@ -1057,55 +1059,78 @@ export async function findReservationDiscounts(
     reservationType
   );
 
-  // AWS Price List APIが無効の場合は静的カタログを返す
-  if (process.env.CC_ENABLE_AWS_PRICE_API !== 'true') {
+  if (!reservationType) {
     return catalogResults;
   }
 
-  // AWS Price List APIから取得を試みる（RIとSP両方）
-  if (reservationType) {
-    try {
-      const { fetchPricingFromAWS, generateCacheKey } = await import('./aws-pricing-client');
-      const { pricingCache } = await import('./pricing-cache');
-      
-      const cacheKey = generateCacheKey(service, instanceType, region, reservationType, tenancy);
-      
-      // キャッシュをチェック
-      const cachedData = pricingCache.get(cacheKey);
-      if (cachedData) {
-        console.log(`Using cached pricing data for ${reservationType}:`, cacheKey);
-        return cachedData;
-      }
+  const { generateCacheKey } = await import('./awsreservedcosts-endpoint-client');
+  const { pricingCache } = await import('./pricing-cache');
+  const cacheKey = generateCacheKey(service, instanceType, region, reservationType, tenancy);
 
-      // AWS APIから取得
-      console.log(`Fetching ${reservationType} pricing from AWS API for`, cacheKey);
-      const apiResults = await fetchPricingFromAWS(
-        service, 
-        instanceType, 
-        region, 
-        reservationType, 
-        tenancy,
+  // 1. BigQuery API（内部でファイル/メモリキャッシュを透過的に利用）
+  try {
+    const { fetchPricingFromReservedCostsApi } = await import('./awsreservedcosts-endpoint-client');
+    console.log(`Fetching ${reservationType} pricing from Reserved Costs API for`, cacheKey);
+    const apiResults = await fetchPricingFromReservedCostsApi(
+      service,
+      instanceType,
+      region,
+      reservationType,
+      tenancy,
+      operatingSystem,
+      databaseEngine,
+      databaseEdition,
+      deploymentOption,
+      licenseModel,
+      lineitemOperation,
+      lineitemUsageType
+    );
+    if (apiResults.length > 0) {
+      pricingCache.set(cacheKey, apiResults);
+      console.log(`Successfully fetched ${apiResults.length} ${reservationType} pricing options from Reserved Costs API`);
+      return apiResults;
+    }
+    console.log(`No ${reservationType} pricing found in Reserved Costs API, trying cache`);
+  } catch (error) {
+    console.error(`Error fetching ${reservationType} from Reserved Costs API, falling back to cache:`, error);
+  }
+
+  // 2. キャッシュ（API失敗 or 結果なし時のフォールバック）
+  const cachedData = pricingCache.get(cacheKey);
+  if (cachedData) {
+    console.log(`Using cached pricing data for ${reservationType}:`, cacheKey);
+    return cachedData;
+  }
+
+  // 3. AWS Pricing Bulk API
+  if (process.env.CC_ENABLE_AWS_PRICE_API === 'true') {
+    try {
+      const { fetchPricingFromAWS } = await import('./aws-pricing-client');
+      console.log(`Fetching ${reservationType} pricing from AWS Pricing Bulk API for`, cacheKey);
+      const awsResults = await fetchPricingFromAWS(
+        service,
+        instanceType,
+        region,
+        reservationType,
+        tenancy ?? 'Shared',
         operatingSystem,
         databaseEngine,
         databaseEdition,
         deploymentOption,
         licenseModel
       );
-      
-      if (apiResults.length > 0) {
-        // キャッシュに保存
-        pricingCache.set(cacheKey, apiResults);
-        console.log(`Successfully fetched ${apiResults.length} ${reservationType} pricing options from AWS API`);
-        return apiResults;
-      } else {
-        console.log(`No ${reservationType} pricing found in AWS API, using static catalog`);
+      if (awsResults.length > 0) {
+        pricingCache.set(cacheKey, awsResults);
+        console.log(`Successfully fetched ${awsResults.length} ${reservationType} pricing options from AWS Pricing Bulk API`);
+        return awsResults;
       }
+      console.log(`No ${reservationType} pricing found in AWS Pricing Bulk API, falling back to static catalog`);
     } catch (error) {
-      console.error(`Error fetching ${reservationType} from AWS Price API, falling back to catalog:`, error);
+      console.error(`Error fetching ${reservationType} from AWS Pricing Bulk API, falling back to static catalog:`, error);
     }
   }
 
-  // フォールバック: 静的カタログを返す
+  // 4. 静的カタログ
   return catalogResults;
 }
 
@@ -1132,6 +1157,7 @@ export function getBestReservationDiscount(
   discounts: ReservationDiscount[]
 ): ReservationDiscount | undefined {
   if (discounts.length === 0) return undefined;
+console.log('Evaluating reservation discounts to find the best option:', discounts);
 
   // 支払い方法の優先順位
   const paymentPriority: Record<string, number> = {
@@ -1153,11 +1179,11 @@ export function getBestReservationDiscount(
     if (priorityA !== priorityB) {
       return priorityA - priorityB;
     }
-    
+// console.log('Comparing discounts with same contract years and payment method, checking unit price:', a, b);
     // 3. 契約年数と支払い方法が同じ場合は単価が安い方を優先
     return a.unit_price - b.unit_price;
   });
-
+console.log('Sorted reservation discounts by preference:', sorted[0]); 
   const bestDiscount = sorted[0];
 
   // フォールバックロジック: 3年NoUpfrontがない場合、1年NoUpfrontを探す

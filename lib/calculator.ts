@@ -49,7 +49,9 @@ async function findRDSReservationDiscount(
   databaseEngine?: string,
   databaseEdition?: string,
   deploymentOption?: string,
-  licenseModel?: string
+  licenseModel?: string,
+  lineitemOperation?: string,
+  lineitemUsageType?: string
 ): Promise<ReservationDiscount | undefined> {
   const allDiscounts = await findReservationDiscounts(
     service,
@@ -61,7 +63,9 @@ async function findRDSReservationDiscount(
     databaseEngine,
     databaseEdition,
     deploymentOption,
-    licenseModel
+    licenseModel,
+    lineitemOperation,
+    lineitemUsageType
   );
 
   if (process.env.NODE_ENV === 'development') {
@@ -146,7 +150,9 @@ export async function calculateCommitmentCost(
       costData.product_databaseengine,
       costData.product_databaseedition,
       costData.product_deploymentoption,
-      costData.product_licensemodel
+      costData.product_licensemodel,
+      costData.lineitem_operation,
+      costData.lineitem_usagetype
     );
     riDiscount1y = await findRDSReservationDiscount(
       costData.service,
@@ -157,7 +163,9 @@ export async function calculateCommitmentCost(
       costData.product_databaseengine,
       costData.product_databaseedition,
       costData.product_deploymentoption,
-      costData.product_licensemodel
+      costData.product_licensemodel,
+      costData.lineitem_operation,
+      costData.lineitem_usagetype
     );
   } else {
     // RDS以外は通常の検索
@@ -178,8 +186,16 @@ export async function calculateCommitmentCost(
   const spDiscounts = await findReservationDiscounts(
     costData.service,
     costData.product_region,
-    undefined, // SPはインスタンスタイプ不問
-    'SP'
+    costData.product_instancetype,
+    'SP',
+    tenancy,
+    costData.product_operatingsystem, // EC2の場合、OS情報を渡す
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    costData.lineitem_operation,
+    costData.lineitem_usagetype,
   );
   const spDiscount = getBestReservationDiscount(spDiscounts);
 
@@ -250,7 +266,7 @@ export async function calculateCommitmentCost(
   const riCommitmentWithDepreciation30d = riCommitmentCost30d + monthlyUpfrontCost30d;
   const riCostReduction30d = Math.max(0, riAppliedOndemand - riCommitmentWithDepreciation30d);
   const riRefund30d = riCommitmentWithDepreciation30d === ondemandCost ? 0 : Math.max(0, riCommitmentWithDepreciation30d - riAppliedOndemand);
-  // リスクプレミアム料 = コスト削減額 × 料率
+  // スマート予約利用料 = コスト削減額 × 料率
   const riInsurance30d = riCostReduction30d > 0 ? riCostReduction30d * params.insurance_rate_30d : 0;
   const riFinalPayment30d = riCommitmentWithDepreciation30d + riInsurance30d;
   // 実効割引率 = 1 - (月間総コスト / (オンデマンドコスト × 適用率))
@@ -262,7 +278,7 @@ export async function calculateCommitmentCost(
   const riCommitmentWithDepreciation1y = riCommitmentCost1y + monthlyUpfrontCost1y;
   const riCostReduction1y = Math.max(0, riAppliedOndemand - riCommitmentWithDepreciation1y);
   const riRefund1y = riCommitmentWithDepreciation1y === ondemandCost ? 0 : Math.max(0, riCommitmentWithDepreciation1y - riAppliedOndemand);
-  // リスクプレミアム料 = コスト削減額 × 料率
+  // スマート予約利用料 = コスト削減額 × 料率
   const riInsurance1y = riCostReduction1y > 0 ? riCostReduction1y * params.insurance_rate_1y : 0;
   const riFinalPayment1y = riCommitmentWithDepreciation1y + riInsurance1y;
   // 実効割引率 = 1 - (月間総コスト / (オンデマンドコスト × 適用率))
@@ -271,10 +287,12 @@ export async function calculateCommitmentCost(
     : 0;
 
   // SP計算
-  // SPの場合、unit_priceは割引率（支払い率）を表す
-  // 例: unit_price = 0.6 → オンデマンドの60%を支払う（40%割引）
+  // SP計算
+  // unit_price_unit が 'discount rate' の場合は支払い率、'per hour' の場合は時間単価として扱う
   const spCommitmentCost = spDiscount
-    ? ondemandCost * spDiscount.unit_price
+    ? (spDiscount.unit_price_unit === 'per hour'
+        ? usageAmount * spDiscount.unit_price
+        : ondemandCost * spDiscount.unit_price)
     : ondemandCost;
 
   const spAppliedOndemand = ondemandCost * params.sp_applied_rate;
@@ -282,7 +300,7 @@ export async function calculateCommitmentCost(
   // オンデマンドコストとコミットメントコストが同額の場合、返金は0
   const spRefund = spCommitmentCost === ondemandCost ? 0 : Math.max(0, spCommitmentCost - spAppliedOndemand);
 
-  // リスクプレミアム料 = コスト削減額 × リスクプレミアム料率（コスト削減額が0以下の場合はリスクプレミアム料も0）
+  // スマート予約利用料 = コスト削減額 × スマート予約利用料率（コスト削減額が0以下の場合はスマート予約利用料も0）
   const spInsurance30d = spCostReduction > 0 ? spCostReduction * params.insurance_rate_30d : 0;
   const spInsurance1y = spCostReduction > 0 ? spCostReduction * params.insurance_rate_1y : 0;
 
