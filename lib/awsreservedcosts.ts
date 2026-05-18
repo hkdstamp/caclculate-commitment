@@ -356,7 +356,6 @@ WITH sp_base AS (
   FROM ${table} AS t
   WHERE
     t.unit IN ('Hrs', 'Hours')
-    AND COALESCE(t.product_family, '') != 'EC2InstanceSavingsPlans'
     ${serviceFilter}
 ), sp_pricing AS (
   SELECT

@@ -178,8 +178,10 @@ export async function calculateCommitmentCost(
   const spDiscounts = await findReservationDiscounts(
     costData.service,
     costData.product_region,
-    undefined, // SPはインスタンスタイプ不問
-    'SP'
+    costData.product_instancetype,
+    'SP',
+    tenancy,
+    costData.product_operatingsystem, // EC2の場合、OS情報を渡す
   );
   const spDiscount = getBestReservationDiscount(spDiscounts);
 

@@ -163,8 +163,10 @@ async function compareOne(
 async function main() {
   loadEnv('.env.local');
 
-  const inputPath = path.resolve('./public/sample-data.csv');
-  const outputPath = path.resolve('./public/price-compare-old-new-sample-data.csv');
+  const inputArg = process.argv[2];
+  const outputArg = process.argv[3];
+  const inputPath = path.resolve(inputArg || './public/sample-data.csv');
+  const outputPath = path.resolve(outputArg || './public/price-compare-old-new-sample-data.csv');
   const rows = parseCsv(inputPath);
 
   const header = [

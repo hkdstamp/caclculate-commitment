@@ -36,3 +36,5 @@ next-env.d.ts
 
 # pricing file cache
 .cache/
+
+.tmp-run/
