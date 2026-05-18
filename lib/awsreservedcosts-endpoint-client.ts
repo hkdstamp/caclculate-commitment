@@ -3,10 +3,15 @@ import path from 'path';
 import { ReservationDiscount } from './types';
 import {
   listReservedCosts,
-  listSavingsPlansCosts,
   ReservedCost as ReservedCostResponse,
-  SavingsPlanCost as SavingsPlanCostResponse,
 } from './awsreservedcosts';
+import {
+  SavingsplansClient,
+  DescribeSavingsPlansOfferingRatesCommand,
+  SavingsPlanType,
+  SavingsPlanProductType,
+  SavingsPlanRateServiceCode,
+} from '@aws-sdk/client-savingsplans';
 
 interface CacheEntry<T> {
   data: T[];
@@ -71,7 +76,7 @@ function saveCacheToFile<T>(filePath: string, cache: Map<string, CacheEntry<T>>)
 
 ensureCacheDir();
 const reservedApiCache = loadCacheFromFile<ReservedCostResponse>(RI_CACHE_FILE);
-const spApiCache = loadCacheFromFile<SavingsPlanCostResponse>(SP_CACHE_FILE);
+const spApiCache = loadCacheFromFile<ReservationDiscount>(SP_CACHE_FILE);
 
 // Debounce timers for flushing each cache to disk.
 let riPersistTimer: ReturnType<typeof setTimeout> | null = null;
@@ -93,6 +98,21 @@ function schedulePersistSp(): void {
   }, persistDebounceMs);
 }
 
+let savingsPlansClient: SavingsplansClient | null = null;
+
+function getSavingsPlansClient(): SavingsplansClient | null {
+  if (savingsPlansClient) return savingsPlansClient;
+  const accessKeyId = process.env.CC_AWS_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.CC_AWS_SECRET_ACCESS_KEY;
+  const region = process.env.CC_AWS_REGION || 'us-east-1';
+  if (!accessKeyId || !secretAccessKey) return null;
+  savingsPlansClient = new SavingsplansClient({
+    region,
+    credentials: { accessKeyId, secretAccessKey },
+  });
+  return savingsPlansClient;
+}
+
 function getRegionDescription(regionCode: string): string {
   const regionMap: Record<string, string> = {
     'ap-northeast-1': 'Asia Pacific (Tokyo)',
@@ -107,7 +127,8 @@ function getRegionDescription(regionCode: string): string {
 function normalizeServiceForApi(service: string, reservationType: 'RI' | 'SP'): string {
   const lower = service.toLowerCase();
   if (lower.includes('ec2') || lower.includes('elastic compute cloud')) {
-    return 'ec2';
+    // EC2のSPはCompute Savings Plansテーブルを優先して参照する。
+    return reservationType === 'SP' ? 'compute' : 'ec2';
   }
   if (lower.includes('rds') || lower.includes('relational database')) {
     return reservationType === 'SP' ? 'rds' : 'rds';
@@ -152,7 +173,7 @@ function setCachedRi(key: string, data: ReservedCostResponse[]): void {
   schedulePersistRi();
 }
 
-function setCachedSp(key: string, data: SavingsPlanCostResponse[]): void {
+function setCachedSp(key: string, data: ReservationDiscount[]): void {
   spApiCache.set(key, { data, timestamp: Date.now() });
   schedulePersistSp();
 }
@@ -184,72 +205,71 @@ async function fetchReservedCostsFromApi(
   return rows;
 }
 
-async function fetchSavingsPlansFromApi(service: string, region: string): Promise<SavingsPlanCostResponse[]> {
-  const locationName = getRegionDescription(region);
-  const cacheKey = `sp:${service}:${locationName}`;
+async function fetchSavingsPlansFromAwsApi(
+  usageType: string,
+  operation: string,
+  region: string
+): Promise<ReservationDiscount[]> {
+  const cacheKey = `sp:${usageType}:${operation}`;
   const cached = getCached(spApiCache, cacheKey);
   if (cached) {
+    console.log(`[pricing-cache] SP cache hit: ${cacheKey}`);
     return cached;
   }
 
-  const rows = await listSavingsPlansCosts({
-    service,
-    locationName,
-  });
-  setCachedSp(cacheKey, rows);
-  return rows;
-}
-
-function normalizeForMatch(value: string | undefined): string {
-  return (value || '').trim().toLowerCase();
-}
-
-function buildUsageSuffix(instanceType: string | undefined): string {
-  if (!instanceType) {
-    return '';
-  }
-  return `:${instanceType.toLowerCase()}`;
-}
-
-function filterSavingsPlanRows(
-  rows: SavingsPlanCostResponse[],
-  instanceType?: string,
-  lineitemOperation?: string,
-  lineitemUsageType?: string
-): SavingsPlanCostResponse[] {
-  if (rows.length === 0) {
-    return rows;
+  const client = getSavingsPlansClient();
+  if (!client) {
+    console.warn('[SP] AWS credentials not configured, skipping DescribeSavingsPlansOfferingRates');
+    return [];
   }
 
-  const op = normalizeForMatch(lineitemOperation);
-  const usage = normalizeForMatch(lineitemUsageType);
-  const usageSuffix = buildUsageSuffix(instanceType);
+  const results: ReservationDiscount[] = [];
+  let nextToken: string | undefined;
 
-  const withDerivedInstance = usageSuffix
-    ? rows.filter((row) => normalizeForMatch(row.usage_id).endsWith(usageSuffix))
-    : rows;
+  do {
+    const cmd = new DescribeSavingsPlansOfferingRatesCommand({
+      savingsPlanTypes: [SavingsPlanType.COMPUTE],
+      products: [SavingsPlanProductType.EC2],
+      serviceCodes: [SavingsPlanRateServiceCode.EC2],
+      usageTypes: [usageType],
+      operations: [operation],
+      nextToken,
+      maxResults: 100,
+    });
+    const res = await client.send(cmd);
+    for (const r of res.searchResults ?? []) {
+      const durationSeconds = r.savingsPlanOffering?.durationSeconds ?? 0;
+      const contractYears = durationSeconds >= 90000000 ? 3 : 1;
+      const paymentOption = r.savingsPlanOffering?.paymentOption ?? '';
+      const paymentMethod =
+        paymentOption === 'No Upfront' ? 'NoUpfront' as const :
+        paymentOption === 'Partial Upfront' ? 'PartialUpfront' as const :
+        'AllUpfront' as const;
+      const props: Record<string, string> = {};
+      for (const p of r.properties ?? []) {
+        props[p.name ?? ''] = p.value ?? '';
+      }
+      results.push({
+        service: 'Amazon Elastic Compute Cloud',
+        contract_years: contractYears,
+        payment_method: paymentMethod,
+        region,
+        instance_type: '',
+        unit_price: parseFloat(r.rate ?? '0'),
+        unit_price_unit: 'per hour',
+        reservation_type: 'SP',
+        tenancy: props['tenancy'] as 'Shared' | 'Dedicated' | 'Host' | undefined,
+        operating_system: props['productDescription'] || undefined,
+        upfront_fee: 0,
+        usage_type: r.usageType || undefined,
+        operation: r.operation || undefined,
+      });
+    }
+    nextToken = res.nextToken;
+  } while (nextToken);
 
-  if (!op && !usage && !usageSuffix) {
-    return rows;
-  }
-
-  const strict = rows.filter(
-    (row) => normalizeForMatch(row.usage_id) === usage && normalizeForMatch(row.operation) === op
-  );
-  if (strict.length > 0) return strict;
-
-  const usageOnly = rows.filter((row) => normalizeForMatch(row.usage_id) === usage);
-  if (usageOnly.length > 0) return usageOnly;
-
-  const opAndInstance = withDerivedInstance.filter((row) => normalizeForMatch(row.operation) === op);
-  if (opAndInstance.length > 0) return opAndInstance;
-
-  if (withDerivedInstance.length > 0) return withDerivedInstance;
-
-  const opOnly = rows.filter((row) => normalizeForMatch(row.operation) === op);
-  if (opOnly.length > 0) return opOnly;
-
-  return rows;
+  setCachedSp(cacheKey, results);
+  return results;
 }
 
 export async function fetchPricingFromReservedCostsApi(
@@ -300,24 +320,16 @@ export async function fetchPricingFromReservedCostsApi(
     }));
   }
 
-  const rows = await fetchSavingsPlansFromApi(apiService, region);
-  const filteredRows = filterSavingsPlanRows(rows, instanceType, lineitemOperation, lineitemUsageType);
+  if (!lineitemUsageType) {
+    console.warn('[SP] lineitemUsageType is empty, cannot query DescribeSavingsPlansOfferingRates');
+    return [];
+  }
 
-  return filteredRows.map((row) => ({
-    service,
-    contract_years: parseContractYears(row.lease_contract_length),
-    payment_method: mapPurchaseOption(row.purchase_option),
-    region,
-    instance_type: '',
-    unit_price: Number(row.discounted_rate) || 0,
-    unit_price_unit: 'per hour',
-    reservation_type: 'SP',
-    tenancy: row.tenancy as 'Shared' | 'Dedicated' | 'Host' | undefined,
-    operating_system: row.operating_system || undefined,
-    upfront_fee: 0,
-    usage_type: row.usage_id || undefined,
-    operation: row.operation || undefined,
-  }));
+  return await fetchSavingsPlansFromAwsApi(
+    lineitemUsageType,
+    lineitemOperation ?? '',
+    region
+  );
 }
 
 export function generateCacheKey(

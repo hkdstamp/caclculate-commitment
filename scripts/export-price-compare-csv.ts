@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { fetchPricingFromAWS, fetchOnDemandPricingFromAWS } from '../lib/aws-pricing-client';
+import { fetchPricingFromAWS, fetchOnDemandPricingFromAWS, fetchEC2OnDemandPricingAllLicenseModels } from '../lib/aws-pricing-client';
 import { fetchPricingFromReservedCostsApi } from '../lib/awsreservedcosts-endpoint-client';
 import { getBestReservationDiscount } from '../lib/reservation-catalog';
 
@@ -118,7 +118,6 @@ async function compareOnDemandOne(
   let diffValue = 0;
   let diffPercent = '0.00';
   if (row.service === 'AmazonEC2') {
-    const { fetchEC2OnDemandPricingAllLicenseModels } = await import('../lib/aws-pricing-client');
     const candidates = await fetchEC2OnDemandPricingAllLicenseModels(
       instanceType,
       row.product_region,
@@ -257,95 +256,52 @@ async function main() {
   const outputArg = process.argv[3];
   const modeArg = process.argv[4]?.toLowerCase() || 'reserved';
   const inputPath = path.resolve(inputArg || './public/sample-data.csv');
-  
-  // modeArg が 'ondemand' なら、オンデマンド比較用ファイル名に変更
+
   const outputPath = path.resolve(
-    outputArg || (modeArg === 'ondemand' 
+    outputArg || (modeArg === 'ondemand'
       ? './public/price-compare-ondemand-old-csv.csv'
       : './public/price-compare-old-new-sample-data.csv')
   );
-  
+
   const rows = parseCsv(inputPath);
 
   if (modeArg === 'ondemand') {
-    // オンデマンド比較モード
     const ondemandHeader = [
-      'request_id',
-      'type',
-      'service',
-      'region',
-      'lineitem_operation',
-      'lineitem_usagetype',
-      'instance_type',
-      'tenancy',
-      'operating_system',
-      'database_engine',
-      'database_edition',
-      'deployment_option',
-      'license_model',
-      'pricing_api_ondemand',
-      'csv_pricing_publicondemandrate',
-      'diff_value',
-      'diff_percent',
+      'request_id', 'type', 'service', 'region', 'lineitem_operation',
+      'lineitem_usagetype', 'instance_type', 'tenancy', 'operating_system',
+      'database_engine', 'database_edition', 'deployment_option', 'license_model',
+      'pricing_api_ondemand', 'csv_pricing_publicondemandrate', 'diff_value', 'diff_percent',
     ];
-
     const lines: string[] = [ondemandHeader.map(csvEscape).join(',')];
-
     let requestId = 1;
     for (const row of rows) {
       const ondemand = await compareOnDemandOne(row, requestId);
       lines.push(ondemand.map(csvEscape).join(','));
       requestId += 1;
     }
-
     fs.writeFileSync(outputPath, lines.join('\n') + '\n');
     console.log(`saved (OnDemand mode): ${outputPath}`);
     console.log(`rows: ${lines.length - 1}`);
   } else {
-    // 予約割引比較モード（デフォルト）
     const header = [
-      'request_id',
-      'reservation_type',
-      'service',
-      'region',
-      'lineitem_operation',
-      'lineitem_usagetype',
-      'instance_type',
-      'tenancy',
-      'operating_system',
-      'database_engine',
-      'database_edition',
-      'deployment_option',
-      'license_model',
-      'old_count',
-      'old_best_contract_years',
-      'old_best_payment_method',
-      'old_best_unit_price',
-      'old_best_unit_price_unit',
-      'old_best_upfront_fee',
-      'old_top3_json',
-      'new_count',
-      'new_best_contract_years',
-      'new_best_payment_method',
-      'new_best_unit_price',
-      'new_best_unit_price_unit',
-      'new_best_upfront_fee',
-      'new_top3_json',
+      'request_id', 'reservation_type', 'service', 'region', 'lineitem_operation',
+      'lineitem_usagetype', 'instance_type', 'tenancy', 'operating_system',
+      'database_engine', 'database_edition', 'deployment_option', 'license_model',
+      'old_count', 'old_best_contract_years', 'old_best_payment_method',
+      'old_best_unit_price', 'old_best_unit_price_unit', 'old_best_upfront_fee', 'old_top3_json',
+      'new_count', 'new_best_contract_years', 'new_best_payment_method',
+      'new_best_unit_price', 'new_best_unit_price_unit', 'new_best_upfront_fee', 'new_top3_json',
     ];
-
     const lines: string[] = [header.map(csvEscape).join(',')];
-
     let requestId = 1;
     for (const row of rows) {
       const ri = await compareOne(row, 'RI', requestId);
       lines.push(ri.map(csvEscape).join(','));
       requestId += 1;
-
       const sp = await compareOne(row, 'SP', requestId);
       lines.push(sp.map(csvEscape).join(','));
       requestId += 1;
     }
-
     fs.writeFileSync(outputPath, lines.join('\n') + '\n');
     console.log(`saved (Reserved/SP mode): ${outputPath}`);
     console.log(`rows: ${lines.length - 1}`);
