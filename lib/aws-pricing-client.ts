@@ -1,3 +1,60 @@
+/**
+ * EC2のオンデマンド価格をlicenseModelごとに取得
+ * @returns [{price: number, licenseModel: string}[]]
+ */
+export async function fetchEC2OnDemandPricingAllLicenseModels(
+  instanceType: string,
+  region: string,
+  tenancy: 'Shared' | 'Dedicated' | 'Host' = 'Shared',
+  operatingSystem: string = 'Linux'
+): Promise<{ price: number, licenseModel: string }[]> {
+  const client = getPricingClient();
+  if (!client) return [];
+
+  const regionDescription = getRegionDescription(region);
+  const results: { price: number, licenseModel: string }[] = [];
+  try {
+    const input: GetProductsCommandInput = {
+      ServiceCode: 'AmazonEC2',
+      Filters: [
+        { Type: 'TERM_MATCH', Field: 'instanceType', Value: instanceType },
+        { Type: 'TERM_MATCH', Field: 'location', Value: regionDescription },
+        { Type: 'TERM_MATCH', Field: 'tenancy', Value: tenancy },
+        { Type: 'TERM_MATCH', Field: 'operatingSystem', Value: operatingSystem },
+        { Type: 'TERM_MATCH', Field: 'preInstalledSw', Value: 'NA' },
+      ],
+      MaxResults: 20,
+    };
+    const command = new GetProductsCommand(input);
+    const response = await retryWithBackoff(async () => {
+      return await client.send(command);
+    });
+    await sleep(API_CALL_DELAY);
+    if (response.PriceList && response.PriceList.length > 0) {
+      for (const priceStr of response.PriceList) {
+        const price = JSON.parse(priceStr as string);
+        const licenseModel = price.product?.attributes?.licenseModel || '';
+        if (price.terms && price.terms.OnDemand) {
+          for (const ondemandTerm of Object.values(price.terms.OnDemand) as any[]) {
+            const priceDimensions = Object.values(ondemandTerm.priceDimensions) as any[];
+            for (const dimension of priceDimensions) {
+              const unit = dimension.unit || '';
+              const priceValue = parseFloat(dimension.pricePerUnit?.USD || '0');
+              const desc = dimension.description || '';
+              // Reservationを除外し、正しいオンデマンドのみ
+              if (unit === 'Hrs' && priceValue > 0 && !desc.includes('Reservation')) {
+                results.push({ price: priceValue, licenseModel });
+              }
+            }
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching EC2 OnDemand pricing (all licenseModels):', error);
+  }
+  return results;
+}
 import {
   PricingClient,
   GetProductsCommand,
@@ -520,4 +577,228 @@ export function generateCacheKey(
 ): string {
   const tenancyStr = tenancy ? `:${tenancy}` : '';
   return `${service}:${instanceType || 'SP'}:${region}:${reservationType}${tenancyStr}`;
+}
+
+/**
+ * AWS Price List APIからEC2のオンデマンド単価を取得
+ */
+async function fetchEC2OnDemandPricing(
+  instanceType: string,
+  region: string,
+  tenancy: 'Shared' | 'Dedicated' | 'Host' = 'Shared',
+  operatingSystem: string = 'Linux'
+): Promise<number | null> {
+  const client = getPricingClient();
+  if (!client) return null;
+
+  const regionDescription = getRegionDescription(region);
+
+  try {
+    const input: GetProductsCommandInput = {
+      ServiceCode: 'AmazonEC2',
+      Filters: [
+        {
+          Type: 'TERM_MATCH',
+          Field: 'instanceType',
+          Value: instanceType,
+        },
+        {
+          Type: 'TERM_MATCH',
+          Field: 'location',
+          Value: regionDescription,
+        },
+        {
+          Type: 'TERM_MATCH',
+          Field: 'tenancy',
+          Value: tenancy,
+        },
+        {
+          Type: 'TERM_MATCH',
+          Field: 'operatingSystem',
+          Value: operatingSystem,
+        },
+        {
+          Type: 'TERM_MATCH',
+          Field: 'preInstalledSw',
+          Value: 'NA',
+        },
+      ],
+      MaxResults: 10,  // 複数の結果を取得して最適なものを選ぶ
+    };
+
+    console.log(`🔍 EC2 OnDemand Query: instance=${instanceType}, region=${region} (${regionDescription}), tenancy=${tenancy}, os=${operatingSystem}`);
+    
+    const command = new GetProductsCommand(input);
+    const response = await retryWithBackoff(async () => {
+      return await client.send(command);
+    });
+
+    await sleep(API_CALL_DELAY);
+
+    console.log(`📦 EC2 Response PriceList count: ${response.PriceList?.length || 0}`);
+    
+    if (response.PriceList && response.PriceList.length > 0) {
+      // 複数の結果から、最適なオンデマンド価格を探す
+      for (const priceStr of response.PriceList) {
+        const price = JSON.parse(priceStr as string);
+        
+        console.log(`✅ Checking product: ${price.product?.attributes?.instanceType}`);
+        
+        // OnDemand 価格を抽出
+        if (price.terms && price.terms.OnDemand) {
+          console.log(`🔎 OnDemand terms found, checking dimensions...`);
+          for (const ondemandTerm of Object.values(price.terms.OnDemand) as any[]) {
+            const priceDimensions = Object.values(ondemandTerm.priceDimensions) as any[];
+            
+            for (const dimension of priceDimensions) {
+              const unit = dimension.unit || '';
+              const priceValue = parseFloat(dimension.pricePerUnit?.USD || '0');
+              const desc = dimension.description || '';
+              
+              console.log(`   💵 unit="${unit}", price=$${priceValue}, desc="${desc.substring(0, 60)}..."`);
+              
+              // 正真正銘のオンデマンド価格 (Reservation や割引ではない)
+              if (unit === 'Hrs' && priceValue > 0 && !desc.includes('Reservation')) {
+                console.log(`💰 Found VALID on-demand price: $${priceValue}/hr`);
+                return priceValue;
+              }
+            }
+          }
+        }
+      }
+      console.log(`⚠️  No valid on-demand price found in any product`);
+    } else {
+      console.log(`❌ No products found for: ${instanceType} in ${regionDescription} (${tenancy}, ${operatingSystem})`);
+    }
+  } catch (error) {
+    console.error('Error fetching EC2 OnDemand pricing:', error);
+  }
+
+  return null;
+}
+
+/**
+ * AWS Price List APIからRDSのオンデマンド単価を取得
+ */
+async function fetchRDSOnDemandPricing(
+  instanceType: string,
+  region: string,
+  databaseEngine?: string,
+  databaseEdition?: string,
+  deploymentOption?: string,
+  licenseModel?: string
+): Promise<number | null> {
+  const client = getPricingClient();
+  if (!client) return null;
+
+  const regionDescription = getRegionDescription(region);
+
+  try {
+    const filters: any[] = [
+      {
+        Type: 'TERM_MATCH',
+        Field: 'instanceType',
+        Value: instanceType,
+      },
+      {
+        Type: 'TERM_MATCH',
+        Field: 'location',
+        Value: regionDescription,
+      },
+    ];
+
+    if (databaseEngine && databaseEngine !== 'Any') {
+      filters.push({
+        Type: 'TERM_MATCH',
+        Field: 'databaseEngine',
+        Value: databaseEngine,
+      });
+    }
+
+    if (databaseEdition) {
+      filters.push({
+        Type: 'TERM_MATCH',
+        Field: 'databaseEdition',
+        Value: databaseEdition,
+      });
+    }
+
+    if (deploymentOption) {
+      filters.push({
+        Type: 'TERM_MATCH',
+        Field: 'deploymentOption',
+        Value: deploymentOption,
+      });
+    }
+
+    if (licenseModel) {
+      filters.push({
+        Type: 'TERM_MATCH',
+        Field: 'licenseModel',
+        Value: licenseModel,
+      });
+    }
+
+    const input: GetProductsCommandInput = {
+      ServiceCode: 'AmazonRDS',
+      Filters: filters,
+      MaxResults: 1,
+    };
+
+    const command = new GetProductsCommand(input);
+    const response = await retryWithBackoff(async () => {
+      return await client.send(command);
+    });
+
+    await sleep(API_CALL_DELAY);
+
+    if (response.PriceList && response.PriceList.length > 0) {
+      const price = JSON.parse(response.PriceList[0] as string);
+      
+      if (price.terms && price.terms.OnDemand) {
+        for (const ondemandTerm of Object.values(price.terms.OnDemand) as any[]) {
+          const priceDimensions = Object.values(ondemandTerm.priceDimensions) as any[];
+          for (const dimension of priceDimensions) {
+            const unit = dimension.unit || '';
+            const priceValue = parseFloat(dimension.pricePerUnit?.USD || '0');
+            
+            if (unit === 'Hrs' && priceValue > 0) {
+              return priceValue;
+            }
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching RDS OnDemand pricing:', error);
+  }
+
+  return null;
+}
+
+/**
+ * AWS Price List APIからオンデマンド単価を取得
+ */
+export async function fetchOnDemandPricingFromAWS(
+  service: string,
+  instanceType: string | undefined,
+  region: string,
+  tenancy: 'Shared' | 'Dedicated' | 'Host' = 'Shared',
+  operatingSystem?: string,
+  databaseEngine?: string,
+  databaseEdition?: string,
+  deploymentOption?: string,
+  licenseModel?: string
+): Promise<number | null> {
+  if (!instanceType) return null;
+
+  const serviceCode = getServiceCode(service);
+
+  if (serviceCode === 'AmazonEC2') {
+    return await fetchEC2OnDemandPricing(instanceType, region, tenancy, operatingSystem || 'Linux');
+  } else if (serviceCode === 'AmazonRDS') {
+    return await fetchRDSOnDemandPricing(instanceType, region, databaseEngine, databaseEdition, deploymentOption, licenseModel);
+  }
+
+  return null;
 }
